@@ -26,3 +26,15 @@
     - name: Display raw JSON response
       ansible.builtin.debug:
         var: space_data
+
+    - name: "Directories"
+      file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ item.owner | default(omit) }}"
+        group: "{{ item.group | default(omit) }}"
+      with_items:
+        - path: /srv
+        - path: /srv/checkout
+        - path: /srv/http/rhokz.com_infra
+
