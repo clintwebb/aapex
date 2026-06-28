@@ -38,5 +38,6 @@
         - path: /srv
         - path: /srv/checkout
         - path: /srv/http
+          owner: aap
         - path: /srv/http/rhokz.com_infra
 
