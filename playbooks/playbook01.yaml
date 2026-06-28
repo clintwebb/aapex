@@ -4,7 +4,7 @@
 
 - name: Query the People in Space API
   hosts: all
-  connection: ansible.builtin.local
+  # connection: ansible.builtin.local
   gather_facts: no
 
   vars:
@@ -36,5 +36,6 @@
       with_items:
         - path: /srv
         - path: /srv/checkout
+        - path: /srv/http
         - path: /srv/http/rhokz.com_infra
 
