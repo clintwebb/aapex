@@ -6,6 +6,7 @@
   hosts: all
   # connection: ansible.builtin.local
   gather_facts: no
+  become: yes
 
   vars:
     space_data: "Freddy"
