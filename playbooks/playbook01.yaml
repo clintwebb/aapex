@@ -40,4 +40,5 @@
         - path: /srv/http
           owner: aap
         - path: /srv/http/rhokz.com_infra
-
+        - path: "/srv/{{ grouper }}"
+        - path: "/srv/{{ grouper }}/woot"
