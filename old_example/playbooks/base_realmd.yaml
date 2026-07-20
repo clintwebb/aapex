@@ -32,7 +32,10 @@
       shell:
         cmd: "echo {{ realmd_ad_password }} | realm leave -U {{ realmd_ad_username }}"
         removes: /etc/krb5.keytab
-      when: ansible_check_mode == false and realmd_domain_existing.stdout | length > 0 and (realmd_domain_existing.stdout|lower != realmd_domain|lower)
+      when: 
+        - ansible_check_mode == false
+        - realmd_domain_existing.stdout | length > 0
+        - realmd_domain_existing.stdout|lower != realmd_domain|lower
     
     - name: Host requires an SSH Key, ensure one exists.
       shell:
