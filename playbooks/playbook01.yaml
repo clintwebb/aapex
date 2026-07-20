@@ -10,6 +10,14 @@
 
   vars:
     space_data: "Freddy"
+    wooper: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          64346162383439623335646331306538386362643064643433663536306333613661646230363366
+          3966666531376664633561666461663166633536343738340a343264623036373861666131366232
+          33373839313664633634323865633839623461326661353834396263356338633262316266326530
+          3863663666656536630a663635353365343830646539373462313033383436316437663965633831
+          3536
+
 
   tasks:
     # make an API call to the url api.open-notify.org
@@ -42,3 +50,4 @@
         - path: /srv/http/rhokz.com_infra
         - path: "/srv/{{ grouper | default('unknown') }}"
         - path: "/srv/{{ grouper | default('unknown') }}/wooter"
+        - path: "/srv/{{ grouper | default('unknown') }}/{{ wooper }}"
