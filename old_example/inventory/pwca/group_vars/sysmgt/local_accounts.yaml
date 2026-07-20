@@ -1,0 +1,15 @@
+dmz_local_extra:
+  - user: prokopgl
+    comment: 'Glen Prokopyszyn'
+    uid: 1573
+    key: |
+      ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAx1gblfHv0LbHZE/uhQhyk+x2DXmIAv02qdFyMF9w4WvT68XPM8vzW+wiVOrMvMCP16TBO4RCKjvDA7vvEvtWr1PmzribgVIwP9gNgckM6iRUBIXutgYLHTZ2lHues7BugKcwHaRCkvUF2cFqwUE2GyTLCvknoUnXlR/u/hoS0NM= prokopgl@sysmgt1-1
+      ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEArppQesoHWc3T6aIkdk/MHYbzM5UlBm4ixhTJaRffABxmF1HsYIs8NbtZJ5UQKWJH3ij1/qWcHCytVvnws3015mPJ1H+Xy96UBpHf8LE17vGnphPBvWs8x7gQsHU65EFE977Q5prnlyRNA+QLCIg7/Jgvb0Br1MEWefCtkcwa4EjYwzp/s/E6rVSm+1zr7IyEYLWKEhMDaJjSdR72IeFB4iXJR4wJBdPDU54g94tYblW0PEJfDl/X8FruVSP6GMnqJvoub2jDRmxf2Rr/2975kZx99Ndlmc6XbFEnHaI7QSuuHqV8FP/6lK2fEjNYkLo3Pz/5/JjFejaudgnd0J6Q3w== prokopgl@sysmgt2-1
+  - user: qasimaz
+    comment: 'Qasim Aziz'
+    uid: 1597
+    rename: qasimaz_adm 
+  - user: wenya
+    comment: 'Yan Wen'
+    uid: 1598
+    rename: wenya_adm 

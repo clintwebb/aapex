@@ -1,0 +1,17 @@
+- hosts: d-r9ex
+  become: yes
+#  gather_facts: yes
+
+  tasks:
+    - name: Test
+      include_tasks: tasks/logical_volume.yaml
+      vars:
+        mdv:
+          services: 
+            stop: httpd
+#     stop:     - list of services to stop before begining the process. this should include anything that would be using that location.
+#     start:    - list of services to restart after the process complete.  If not provided, it will use the mdv_services_stop list.
+          mnt: /var/log/shy2
+#          vg: vg_logs
+          lv: lv_log_shy2
+          lv_size: 200M

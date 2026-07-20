@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>oracle_weblogic_admin</short>
+  <description>oracle_weblogic_admin</description>
+  <port protocol="tcp" port="9001" />
+  <port protocol="tcp" port="9002" />
+</service>

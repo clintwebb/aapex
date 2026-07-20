@@ -1,0 +1,7 @@
+shyapps_shell: /bin/bash
+
+shyapps_ssh_key: |
+  {{ ssh_key_shyapps_sysmgt }}
+  {{ ssh_key_release_intapp }}
+
+elastic_token: "{{ elastic_tokens.linux_shy_dev }}"

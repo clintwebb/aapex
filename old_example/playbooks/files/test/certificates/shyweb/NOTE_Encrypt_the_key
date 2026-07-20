@@ -1,0 +1,2 @@
+Example:
+   ansible encrypt playbooks/files/dev/shyweb/certs/example.key

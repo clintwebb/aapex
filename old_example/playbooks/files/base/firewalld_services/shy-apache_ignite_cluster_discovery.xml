@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>shy-apache_ignite_cluster_discovery</short>
+  <description>SHY - Apache Ignite - Cluster - Discovery</description>
+  <port protocol="tcp" port="47501-47520"/>
+  <port protocol="tcp" port="47521-47540"/>
+  <port protocol="tcp" port="47541-47560"/>
+</service>

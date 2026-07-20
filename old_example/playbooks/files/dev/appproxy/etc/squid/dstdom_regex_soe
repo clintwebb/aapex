@@ -1,0 +1,11 @@
+#----------------------------------
+# This file is managed by Ansible.
+#----------------------------------
+# Regex Whitelist - Please ensure you comment with JIRA Number
+
+# Required for Windows SOE build          
+(^|\.)chocolatey\.org$
+(^|\.)azureedge\.net$
+(^|\.)powershellgallery\.com$
+(^|\.)download\.sysinternals\.com$
+(^|\.)microsoft\.com$

@@ -1,0 +1,49 @@
+# This is for very general stuff that are small, simple, and would not be appropriate to waste having dozens for playbooks for.
+- name: General, Misc. Stuff
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  handlers:
+    - name: reload lan
+      shell:
+        cmd: 'nmcli con up lan'
+
+  tasks:
+    - name: "Directory: /opt/scripts"
+      ansible.builtin.file:
+        path: /opt/scripts
+        state: directory
+        owner: root
+        group: sysadmin
+        mode: 0755
+        
+    - name: Crypto Policies
+      when: ansible_facts['distribution_major_version'] >= "8"
+      block:        
+        - name: "Check current Crypto Policy"
+          shell:
+            cmd: "update-crypto-policies --show"
+          changed_when: false
+          check_mode: false
+          register: current_crypto_policy
+
+        - name: "Set Crypto Policy"
+          shell: 
+            cmd: "update-crypto-policies --set {{ crypto_policy }}"
+          when: current_crypto_policy.stdout != crypto_policy
+                                                
+    - name: Logrotate
+      copy:
+        src: files/base/logrotate.conf
+        dest: /etc/logrotate.conf
+
+    - name: IP Mappings
+      when: ip_list is defined
+      community.general.nmcli:
+        conn_name: "{{ ip_conn_name | default('lan') }}"
+        ifname: "{{ ip_ifname | default(omit) }}"
+        state: present
+        type: ethernet
+        ip4: "{{ ip_list }}"
+      notify: reload lan

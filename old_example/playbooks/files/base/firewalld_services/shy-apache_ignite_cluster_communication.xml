@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>shy-apache_ignite_cluster_communication</short>
+  <description>SHY - Apache Ignite - Cluster - Communication</description>
+  <port protocol="tcp" port="47101-47120"/>
+  <port protocol="tcp" port="47121-47140"/>
+  <port protocol="tcp" port="47141-47160"/>
+</service>

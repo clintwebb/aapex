@@ -1,0 +1,34 @@
+# Applies to SHY Legacy base structure
+- name: SHY Legacy
+  hosts: shy_legacy
+  become: yes
+  gather_facts: false
+
+  tasks:
+#shyapps:x:4555:4555::/home/shyapps:/bin/bash
+    - name: Create 'shyapps' account
+      include_tasks: tasks/local_accounts.yaml
+      vars:
+        ac_name: shyapps
+        ac_group: shyapps
+        ac_uid: 4555
+        ac_key: "{{ shyapps_ssh_key }}"
+
+    - name: "Create Directories"
+      file:
+        dest: "{{ item.dest }}"
+        src: "{{ item.src | default(omit) }}"
+        owner: "{{ item.owner | default('wmaster') }}"
+        group: "{{ item.group | default('wmaster') }}"
+        mode: "{{ item.mode | default('2775') }}"
+        state: "{{ item.state  | default('directory') }}"
+      loop_control: 
+        label: "{{ item.dest }}"
+      with_items:
+        - dest: /opt/shyapps
+          owner: shyapps
+          group: shyapps
+          mode: '2775'
+
+        
+        

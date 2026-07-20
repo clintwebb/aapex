@@ -1,0 +1,175 @@
+# Whenever some files exist in an existing volume, but we want them moved to a new LV.
+# This can also be used to setup a volume for a specific directory (even if it doesn't already exist).
+#
+# Will expect some extra variables.
+#
+# mdv:
+#   services:   - if set to 'none' will not stop or start anything.  
+#     stop:     - list of services to stop before begining the process. this should include anything that would be using that location.
+#     start:    - list of services to restart after the process complete.  If not provided, it will use the mdv.services.stop list. If set to 'false' will not start the service.
+#   mnt:        - source directory that we are moving, that will result in a new LV mounted at this point.
+#   vg:         - VG to create new volume in.  If not specified, will assume 'vg_sys'
+#   lv:         - name of logical volume (eg, 'lv_new_volume')
+#   lv_size:    - size of the new LV
+#   mnt_mode:   - fs mode of the mount point (set before actual mount)
+#   fstype:     - default is 'xfs'
+#   mnt_opts:   - default is'defaults,nodev'
+
+- set_fact:
+    mdv_out_vol: "/dev/mapper/{{ mdv.vg | default('vg_sys') }}-{{ mdv.lv }}" 
+    mdv_out_sizeX: "{{ mdv.lv_size | human_to_bytes }}"
+
+- name: "Check if already accomplished: {{ mdv.mnt }} on {{ mdv_out_vol }}"
+  shell: "set -o pipefail && df --output=source {{ mdv.mnt }} | tail -n +2"
+  changed_when: false
+  check_mode: false
+  ignore_errors: true
+  register: lvm_facts
+
+- name: Add new storage device if available
+  when: not ansible_check_mode
+  script: 
+    cmd: "add_disk.sh {{ mdv.vg | default('vg_sys') }}"
+  register: mdv_add_disk
+  changed_when: "'OK – added' in mdv_add_disk.stdout"
+
+- name: "Ensure logical volumes are created: {{ mdv.lv }}"
+  lvol:
+    vg: "{{ mdv.vg | default('vg_sys') }}"
+    lv: "{{ mdv.lv }}"
+    size: "{{ mdv.lv_size }}"
+    force: false
+    resizefs: true
+    shrink: false
+    
+- name: Prepare to move the Directory to LV.
+  when: >
+    lvm_facts.stdout != mdv_out_vol and
+    mdv.mnt != '/' and
+    mdv.mnt != '/var' and
+    mdv.mnt != '/opt' and
+    mdv.mnt != '/tmp'
+  block:
+
+    # Get the current size of the specified folder (if it already exists)... we need to make sure it will fit in the LV that is being created.
+    # 'when: lvm_facts.rc == 0' is used in this case to skip this step in 'check mode'.  because the folder may not even exist.
+    - name: "Get size of specified folder: {{ mdv.mnt }}"
+      when: lvm_facts.rc == 0
+      shell:
+        cmd: "du -sh {{ mdv.mnt }}"
+      check_mode: false
+      changed_when: false
+      register: mdv_out_mntsize
+
+    - name: "Evaluate the current folder size (from human to bytes)"
+      when: lvm_facts.rc == 0
+      set_fact:
+        mdv_out_mntsizeX: "{{ mdv_out_mntsize.stdout.split()[0] | human_to_bytes }}"
+
+    - name: "Folder migration info"
+      debug:
+        msg: "{{ mdv.mnt }}: The LV volume ({{ mdv.lv_size }}) will be receiving directory of size ({{ mdv_out_mntsize.stdout.split()[0] }})"
+      when: >
+        lvm_facts.rc == 0
+
+    # If there is not enough space for the content, we need the play to fail.
+    - name: Fail if not enough space in new volume for current content.
+      fail:
+        msg: "{{ mdv.mnt }}: The LV volume ({{ mdv.lv_size }}) is not large enough to handle directory size ({{ mdv_out_mntsize.stdout.split()[0] }})"
+      when: >
+        lvm_facts.rc == 0 and
+        mdv_out_mntsizeX|int >= mdv_out_sizeX|int
+
+    - name: "Stop the services"
+      when: mdv.services_stop is defined and mdv.services_stop != "none"
+      service: 
+        name: "{{ vv_item }}"
+        state: stopped
+      loop_control:
+        loop_var: vv_item
+      with_items: "{{ mdv.services_stop }}"
+      ignore_errors: true
+    
+    - name: "Rename the {{ mdv.mnt }} to {{ mdv.mnt }}_copy"
+      when: lvm_facts.rc == 0
+      shell:
+        cmd: "mv {{ mdv.mnt }} {{ mdv.mnt }}_copy"
+        creates: "{{ mdv.mnt }}_copy"
+
+    #---------------------------------------------------------------------------
+
+- name: "LV Mount Points: {{ mdv.mnt }}"
+  file:
+    path: "{{ mdv.mnt }}"
+    owner: "{{ mdv.mnt_owner | default(omit) }}"
+    group: "{{ mdv.mnt_group | default(omit) }}"
+    mode: "{{ mdv.mnt_mode | default('0755') }}"
+    state: directory
+
+- name: "Ensure Filesystem is Formatted: /dev/{{ mdv.vg | default('vg_sys') }}/{{ mdv.lv }}"
+  filesystem:
+    fstype: "{{ mdv.fstype | default('xfs') }}"
+    dev: "/dev/{{ mdv.vg | default('vg_sys') }}/{{ mdv.lv }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: "Ensure LV is Mounted: {{ mdv.mnt }}"
+  mount:
+    path: "{{ mdv.mnt }}"
+    src: "/dev/{{ mdv.vg | default('vg_sys') }}/{{ mdv.lv }}"
+    fstype: "{{ mdv.fstype | default('xfs') }}"
+    opts: "{{ mdv.mnt_opts | default('defaults,nodev') }}"
+    state: mounted
+
+# There seems to be an occassional issue with the automatic resize of the XFS filesystem when the LV is adjusted.
+# This should double-check it.
+- name: "FileSystem Resize checked: {{ mdv.mnt }}"
+  filesystem:
+    dev: "/dev/{{ mdv.vg | default('vg_sys') }}/{{ mdv.lv }}"
+    fstype: "{{ mdv.fstype | default('xfs') }}"
+    resizefs: true
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: "LV Mount Points (check after mounted): {{ mdv.mnt }}"
+  file:
+    path: "{{ mdv.mnt }}"
+    state: directory
+    mode: "{{ mdv.mnt_mode | default('0755') }}"
+
+- name: "Move the Directory contents to LV: {{ mdv.mnt }}"
+  when: >
+    lvm_facts.stdout != mdv_out_vol and
+    mdv.mnt != '/' and
+    mdv.mnt != '/var' and
+    mdv.mnt != '/opt' and
+    mdv.mnt != '/tmp'
+  block:
+
+    - name: "Check if files exist in original copied directory: {{ mdv.mnt }}_copy"
+      shell:
+        cmd: "ls -A {{ mdv.mnt }}_copy | wc -l"
+      register: mdv_out_copy
+
+    - name: "Move entire contents from {{ mdv.mnt }}_copy to {{ mdv.mnt }}"
+      when: >
+        lvm_facts.rc == 0 and 
+        mdv_out_copy.stdout|int > 0
+      shell:
+        cmd: "mv {{ mdv.mnt }}_copy/* {{ mdv.mnt }}/"
+    
+    - name: "Remove {{ mdv.mnt }}_copy"
+      when: lvm_facts.rc == 0
+      file:
+        path: "{{ mdv.mnt }}_copy"
+        state: absent
+    # end block
+    
+- name: "Start the services"
+  when: mdv.services_start is defined and mdv.services_start != "none"
+  service: 
+    name: "{{ vv_item }}"
+    state: started
+  loop_control:
+    loop_var: vv_item
+  with_items: "{{ mdv.services_start }}"
+  ignore_errors: true
+

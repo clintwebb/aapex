@@ -1,0 +1,26 @@
+# If enabled, an LV will be created for each sftp account (to reduce the ability for one client to fill up storage and block transfers 
+# for other clients)
+sftp_client_lv: false
+
+sshd_config_ClientAliveCountMax: 15
+
+storage_vg_data: vg_data
+
+storage_size_root: 4g
+#storage_size_opt:
+storage_size_var: 35g
+#storage_size_tmp
+storage_size_home: 30g
+
+elastic_token: "{{ elastic_tokens.linux_generic_uat }}"
+
+
+complyadvantage_login: ausiex-test
+complyadvantage_pass: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          66643731356631643836386462383134333863343530633861626538353432653138383630623038
+          6631643964316331353164313966353764623232613963630a323934356136333832653932383165
+          39616237623964303536343139653661333236303364636332373439653930316436663561386638
+          3337366138636436650a363061353235313339386364396636643833653535643864636563353364
+          30373531383835633463383431663735653231653034333765353135346636633065
+

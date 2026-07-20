@@ -1,0 +1,18 @@
+- hosts: "{{ ansible_limit | default(omit) }}"
+  become: yes
+
+  vars:
+    files_env_location: files/dev
+
+  tasks:
+    - set_fact:
+        files: "{{ lookup('fileglob','{{ files_env_location }}/appproxy/etc/squid/*',wantlist=true) | reject('search','squid.conf') | list}}"
+        origl: "{{ lookup('fileglob','{{ files_env_location }}/appproxy/etc/squid/*',wantlist=true) | list }}"
+        orig: "{{ lookup('fileglob','{{ files_env_location }}/appproxy/etc/squid/*',wantlist=true)  }}"
+        
+
+    - debug: var=origl
+    - debug: var=orig
+
+    - debug: var=files
+

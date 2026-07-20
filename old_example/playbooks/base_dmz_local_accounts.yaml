@@ -1,0 +1,181 @@
+# Servers in DMZ zones do not connect to the ActiveDirectories, so require local accounts for system maintenance.
+#
+# Note that dmz_local_sysadmin is included in this playbook and cannot be over-written in group_vars.
+# However, if there are other dmz server groups that require additional access, then they can set 'dmz_local_extra' list
+# and it will get combined.  This is currently not used anywhere except our management boxes.
+---
+- name: DMZ Local Accounts
+  hosts: dmz
+  gather_facts: no
+  become: yes
+
+  vars:
+    dmz_local_sysadmin:
+      - user: webbcl
+        rename: cjwebb
+        uid: 1122
+        comment: Clinton Webb
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAtOzknHucGY8RSs23tdW92qKJV/r6ipl82+3d3gXPMJTrtOpefaVC6VbM/bxzHUApsiMXyK+jlWnhjarTesdB59HeLHvAIxYv6BiEMpCw47d6xkiKfXZwx/C7rGKcv8z4+I107cLao1/JojQ8Lc+IkW+yOGDQxa5IUwBO9lKBYqVmE5SShyDSRiBtOO2hIuD4BSHixpjcqJQr6pAQOSUwLAtVieXxbGkQZlHGGMV9gb7ntIB4RzZPbkaWVyTBGDojGqadMli2f4tWPqG+HiQJ7gnw1HcIey9XVORyhZFQstVuyaQJO6a0CjrhdpQf0nRKC1AEwAkiGRLRfQSu3NjP1Q== cjw@per20338
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEb5hbY9ARVuCRwjubopzw/afi6fyfFvD19xT4+FmzNjUa5jD1Lj19S9w38F7HcYPJNhFDuwRg6sI8vKf4ftZB+k5JGXaFeOfMeH0YJeTjEd8n+vp3fVG1oQuHuHBmCNDXF1qcY+nXzjkF3kNk2PxODIQbVjtNPU0rd8U8BnWUO9ehRWAnLcCrd5URZiaDONNzBUGtucc52crEtlQP1vD1yGB9pnaWYT7Y1Egs52Yq2JcDAtAiQrG11R2NSGQxp5Qhemloxd3toH7tBEOhymb0GkF+l+7UPY2LEYQ3tn+XJkLHjumOH7a1SbHO7G1/AZqSeNHwt4eJuUHjkexCeK/X webbcl@sysmgt2-3
+      - user: waterty
+        comment: Tyson Waters
+        uid: 1559
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAx6VzX5LjYnITXQhTyAaKiJ2aKp4CcICGA2DF8/lr51/TaKVSH2teWzbSqkiJZKyu180B3njC6rQ7IygmJh6fYu3Wg7QGuU4Mm7kmbAvexKGqqJMpYZQhUWZWIKEnAccB0RWtiUkhyQax2zScGxvUDnyLZbTDVF0YIXosRQMMGDk= twaters@sysmgt1-1
+      - user: newbype
+        comment: Peter Newby
+        uid: 1564
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAncwTcvUXPVW1I8EQTXMiV238s+XNxaXBjNzmQN7IONC4ocRTA9Is0+WxpKPGhhW+PMtm3FzHX5pltT2H/eNEV4Mxkg7axoS3VZfxqAfwpuDp9aYgyo1h4VkGb2ImB0tmgz0Pvxv2rm482Mw+ntFaExOoKD0ceu7tFQUBIopGaU0= newbype@sysmgt1-1
+          ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAvPJ340xB4baFLYf3ItfWb/GUJQjaSOqqN9buAS1xV5k4AHtejUbZDLRpqDHflr5N/YZ7mVf/Ztg3vqJ3IEteSUqDjB4aovY6Ij0PB24QVEz8WHWid4OJKYGZRFri4ZWSsU0A77r/p96nwiarJZM89ik6sPYE+onFC0dZVTq/BxRIK4VcbsNw5/9AjHERK0kjUAs+j78FLqn/E/2uptRUrPTbwJouJu9nqysno7RFUjpeFiA7T5PpmSYsUzwMYJgaXWNW/sdmPN4AGocJYA7oiGRs5LF2D5i/yl5wRCzuc+Fa3SgfkvUYfXeZ3QSQgU7OV3NzlvCj7B4JgP8yBm3O9Q== newbype@sysmgt2-1
+      - user: jurgeilu
+        comment: Luke Jurgeit
+        uid: 1570
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEA7yy0z9qzUtm/oEMR7Hutak4uovzxB5iC4ysm8QxnNJip/fThtOokSnjUT6Urw+4d4GoLrVET3ax18CpjsCZkA9nEhX12q0vXOwlTlZ35Y65aRsVWNwc837A6BYtsf9Q6QZLnOuH2J9k3HhotcyTrkqAMd1XTosqCAjFfhsI3UIc= ljurgeit@sysmgt1-1
+      - user: strelnal
+        comment: Alexey Strelnikov
+        uid: 1572
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEA4cm8yrNmkhL38XmnIbWf3YcOqnzBL5c9XKH/8owP62l/nY5hdgRjhCvaa1c9J5GlbL4yRG3bXiM/h2rshG6RizPbKjTIdrseXTtb2tZ0uIbvhFz0tjz/2yGrvOcGj7uIFmSC8tmu2Fd5gGWnQnDD76NqE7Kjfc8IFPch+/ElUms= strelnal@sysmgt1-1
+      - user: gmacdonald
+        rename: italiaga
+        comment: Gabriella MacDonald
+        uid: 1575
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDB2SgdeXwP0zqy0pCCKVN1oo6iODp0MVxtdMG0tfocRnLo5FBtvYMR1SB/jNDxOdpEOY1rCcBiTbvOzVcZx8RyIgeybGp/8uISOJG2kgErpuCbZ29ccyrkvnI68zX71/97aVY74E+YMEoaQQEiBTR5imXWzKvkqot9iWy+ZT9grRFDToLfqwdl2J3rHknxNb3f5gNI00Xbgf8xkickxA6GJnGvTSVyZu5QFB2m30SRjm6e5n2/tOzfN4QAIypuuUMZWy/Qx88g74oha7krvbSmsMF/aAYo6gPUN2cuDdBydvhA+cEPoF0NAEZd3w9t9u7mEPEi5KxtqhbpDnZj30b7 italiaga@sysmgt1-1
+      - user: clunedp
+        comment: David Clune
+        uid: 1585
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA32iSpmWaBhxdRQr7/mp4ufTity2NhGB83A31CDZpm9yPkqrAfWFIQTzzrOKNnNfL4LWIoUNaWIxWT3Z13qMYILJimV25UNHX4dLGpTzhw3XBqW82QkF1hUhUkvNdX+/d9NRRpgVBxqTTcHmgFOub8exlbPT/Yyf+L72XE+hxUILS95ZoqGd2pRVMJWGS31lhAg5mCcsvm7SicZ1IbFT/wDl4AOIm3582I5sAECCGrgMFxCXBBtFOSVVYkMwSvPcJInBOvoCZT236PhhH6ikVyTeVEU1950r31iCqaBcKXojNQDnNb07O8tuBRe+yjXmyJ9v4MHNyYfyQbmqz/ksTrw== david.clune@cba.com.au
+      - user: maileysa
+        rename: maileysa_local
+        comment: Saxon Mailey
+        uid: 4877
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAultivCfzBLQgo13hOZ+b42bXFPmLNMh3wl5zgbelHsTwDOYJAFHjEV6QiX+0iOExYwT5A4PSqvhNVrFMItEellHp/Qd9wJoZuURhpW/6gcB6ANx7vy68sVhDg/EAtPtr/1p1dITIFN2qLP2cz/x/Phg9DXhDNAAt3F+CH2uMn8M= maileysa@sysmgt1-1
+          ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEArmhDSCv7xh/PnEj2qRWON7OeO+Fhc8d9lGadJXLRO+ht7EEBL+Za4XgK4iTZvvcn33mvWr2x9uQ2eauv4MPnctBQNj7KemYPiPTiv8bQTZH095tlaU4ma3AEaM4iGFHLC8VYneF7XmlvN71sKyywQmh6dLochIdsqMbFXCUB50gRaV8aUvDvp9bkYd00K80FkCk50ygBvegEuRw+IO2hU5Kw2BSXLSTZaZUx5BdBgNRCpJ3EZjYtd6RVRSrVLtOyO0HDWE6YtRaanmaRYh+3x7401lgj3JtaYHXZaTqvX+PCNRY3/5ur8E6wTYQjKkGntu8EF6hf7C23BE5BTqG4UQ== maileysa@sysmgt2-1
+      - user: balenddi
+        comment: 'Dineshkumar Balendran'
+        uid: 1592
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCWjrmHcv7gg9iXbvWGge98H3oY5PJnt19XSjw9HZpvgQodxV2qtsLLtbqG//clGaTXuabDqQqx849TQPcKiv6tdY0PAEuaCrlwNX5VLTMNBhTeMsoKhiQib521cs+euXCIz91KgftMyRZ+w2ULXsKONy46lu3OlERnJSrs4QS2zFcyDAvrq4KcKNsx3UJf5VG3TzMJpD1knzEQrAl+QAro+y+68qu+A1bprImbG2GAR+bdFbA6/aywpH0GBvugImBV+fBfvJPssgNEC3Zls85EvezgF0zQsssV+rJMODN1vjN1tmMKsYa1CHa31rOzl7/x4psORX64Cv8UO3MfXORWjfX5BtiZvCeiZDx3uFYs95ct4JpA8lfoJA63GPW1PazJQLZT1Cbp7r5y4WIGUkDsy+cXLanhRD+XrjFz43aqHU7kUb7P4qemV/HDMRTkarZOd3ZmRx+VOcv55j+FEvPz4t17Ub1/mpXZGyjDBjMKmgWQiMa3gJUhrR6IwwURcSeTqzrWP/+7jQobCC2kQrZ8Id7cxgf+goK4o7V2yHg3czn12/JP8t+C1OjLqIutI0hOOcBL11JLa8aA61OlVfFqx8gbMDqG4zE0YfsLp79VzL7YfvLKsm/7f+aKDK7S+5Sw/yDQd3eSQMF+sbHA0Gb7OK3W1KC5M9qJpu4TsEg8/Q== Dinesh.Balendran@ausiex.com.au
+      - user: chakrash
+        comment: 'Shubhojit Chakraborty'
+        uid: 1589
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCgWB283EvpX6UoETQ/nbkAK+JBLXLlIfzivp+Hv4GCEr4Fjfu4jbD5MQ4dSeJY5OFfJnawVNzdpkmAhj9fvO3GxK5mdCIky+0gYJfV+byuHl4de6/oHLdu6BE7PMpAZro62H/oi6SNZaE8OTrPiy1P/fsFJiKT0CLcpwD4RfswyS7g1ICE8Lkz1G/zdP8DOH0e4VjCfwf3gQNUFkBTAfhm7IUJGVaNlyzcaiAVBSYIGysLX6Hxia/4tkFc1jINxZdDX/dqM9I8A4ej/H+GcEpJ3ebGZ2NjY5Tvz9qu0BBnxD70kM3UvUhcy4L/vq40t0vTW6tI4UXo8xPKX1MruSED chakrash_adm@sysmgt1-3
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC2ET3fHGbdvORQTCksb7wA0SFT5FS7nVhjrbZHYAEbZ5nhi3CqBZR3jfvpWqygfVztSBwJM2PNqprFEmprIrkbW6nv690kIQlrbT4RZ+ndPrvvzs+xibLIa+W3rtpK1s6qfQmWezGf1PmvBavMxrM567iaSLvU9ZVkXW5iho/xy7IgJ/nXGoDIvNVBDYouqT3eZiPmTIw42EAaylZb78CvhT4PWqVrXaxADN/FLD/VOWlDgRIU481PZWbeBzmO1KPgT76lf8XpQE4xFo2CFqttYSRNri2XuVrLYKAb4xh+9x7jw0u9lmXX5xRuVPtyL9kJnh5mWja/duKrrPh0iB8f chakrash_adm@sysmgt2-3
+        rename: chakrash_adm
+      - user: aryakr
+        rename: aryakr_adm
+        comment: 'Krishan Kumar Arya'
+        uid: 1588
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDVrvuorcm9YtIdWFI/OYmGyVKgpAmhMTzj6wdiuBn69SR9+1lBCQSlFtGoshUlfGELz1HCQyOnbmfZlP9p3fDo0JIvJKHQQaJdkk3YNZOWIsQW4V48+8BO9OY9GZQ24p7vgKEq7tqaKoT5pOdjbI+8jyALmyLQD8oOWmUE+csFeAAR/dRm9hLvBhNUfUuXZuNSpU9HLtWaYUN2m4bQ2sfRjBJymueGMzd+XCsNkOKK3k6G3/U4xVFuoxROQ+G9jEEVNWGO1ynh4ogiMi9idLDh+8YZk6PdS3yOUZQCH6FnsQyAyInU/R0oaWJseNXyKLUkwh4DALmJskzVIQxMkwoT krishan.arya@ausiex.com
+      - user: chakraam
+        rename: chakraam_adm
+        comment: 'Amit Chakraborty'
+        uid: 1587
+        old_uid: 1584
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDyxGtgSr1uweodYtDiAPal0wFeoy5dFs+LPqqJCGR7qHmggKrh9DxgICsOGXxoKY2XnheywBZTSSyZcIwtU1ntXXKTEoCvYcNpbmdDFlC43bAq6H1owROlIYO6sIMxfTLCq/ceEML5kbHykC1wBy6IkXM4an6xSMmM9hk3NOe0ESJlJX2e+5wVZVxo/NDuVm0PJmgEc8NGBBnoNZdJNpCkxxetmfhprFVFaG+Ud+4MGd3R4oFkPDb7+YOUsX9bYAeADRTePG56TAtQbZsGEbcKtAvz7R0/Y+ZtW8VXf/Xmfn6j0BIuZUQCoqp3LsILm0XJLVrXvwWhJr9GVLxAaS55 amit.chakraborty@ausiex.com
+      - user: sahoobi
+        rename: sahoobi_adm
+        comment: 'Biswajit Sahoo'
+        uid: 1583
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDJRyA2MpnDagadJjIlz07iAllpi5aybP03IYiHgUeu48jSZC6/u5RNB1AXKZJmzGd3WqbF/XrNfz2afJecl8R7/SZsJq/XuhMmwg0ivZmuAYQVLd2Qe2cinTNpQ/+BVhdh3kKA2XdZrpGoSXvuDmD2aAd2/eZhVfX3wcLllb1prk2l6jSIFKupB48GYaQDbo16jcKcyJLFqilGk8oCCwii+nlqbm39lULtOZMZyD8gUX5xzCm/QRTpczansxQM0e28SyPuUjBNTadb4DKjOn5QvBfTLZbKrI5IcXHrb/uKGgkTIjHVNdwQtQkFsdw/U5EcWkjQah73HUj9ZltT3/Sl biswajit.sahoo@ausiex.com
+      - user: latifab
+        rename: latifab_adm 
+        comment: 'Mohd Abdul Latif'
+        uid: 28337
+        old_uid: 28336
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0jeb6dj/NdyR4jmLpzx6c4C9SY4HWYiH63t8humPwg6d+kVtVoimIBLYqBw3pQHbfRTvvto0qlbDH2azYebsk0Ioe1++tioMwzYg9EJ59xat8mw2cI1gXMtxkPVpKbQOVzfOES5uDYpIIzkXByAfyFzGl22Ixy9ahsPq1ll/gERqW1NNnftKnTleoLdoV/EmT9SDEWKYvfbyjIpJePu8EjqIfaSjNmU+WhCmKkU0/nnymC7k2vcCfBHndPA2z0hSnNUfxtK4+poLCrKc6VlmvkEnkG2/b4v2XYo9SgGNFWatPLvjyNX+6tinTfLok7dWmPYHsJrn6HarCEJYaVltD latifab@sysmgt1-3
+      - user: bharatmo
+        rename: bharatmo_adm
+        comment: 'Moram Bharath'
+        uid: 1582
+        key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCvEG054iJmEj7oXGNQYVYrtiqSLicU9LqwBgqdC46XBtiQ53F72MZASBPsQGN6F+G7ORHzFGyL62VsSj+zCnRh8RNHyaXfbHJShbR7lrVBeg5e3vs4rCf8S2NPH6S7wr2eFlX8SduZjexfl+xv/Ii68VYVeUk3s54JAbPBnsnqo/HMlussoiPb/asXCG4njObzy5mHAPyWBPaFLs77r8IO9L1n3u8ONfZQjFY0xIthnHKTNeNPOKRrkWfbhr+yLNq2S381jsbkHwh7VWW/vmColqNF0MVSaUAgrzSJkIzc3tkXb0/a/OlBJpMU23HZMqbmAj2jsKuImM4bIwtX0hPV bharatmo@sysmgt1-3
+
+
+    dmz_removed_users:
+      - abdulmo_adm
+      - ahmea1_adm
+      - debononi
+      - eatonki_adm
+      - islamkm
+      - karvouma
+      - leithia
+      - nattrali
+      - ragunasu_adm
+      - shettydi_adm
+      - staffoj
+      - stagolma
+      - vijayaar_adm
+      - whitede
+      - wilkinal
+
+  tasks:
+
+    - name: Local Group (sysadmin)
+      group:
+        name: sysadmin
+        gid: 1001
+        state: present
+
+    - name: Get Local Account Details
+      getent:
+        database: passwd
+
+    - name: Rename existing accounts
+      shell:
+        cmd: "usermod --login {{ item.user }} {{ item.rename }}"
+        creates: "/home/{{ item.user }}"
+      with_items: "{{ dmz_local_sysadmin + dmz_local_extra|default([]) }}"
+      when: item.rename is defined and item.rename in ansible_facts.getent_passwd
+      loop_control:
+        label: "{{ item.user }}"
+
+    - name: Local Accounts
+      user:
+        name: "{{ item.user }}"
+        comment: "{{ item.comment }}"
+        uid: "{{ item.uid }}"
+        group: "{{ item.group | default('sysadmin') }}"
+        home: "/home/{{ item.user }}"
+        move_home: yes
+        expires: -1
+      with_items: "{{ dmz_local_sysadmin + dmz_local_extra|default([]) }}"
+      loop_control:
+        label: "{{ item.user }}"
+
+    - name: Local Accounts - Set Expire
+      shell:
+        cmd: "passwd -x {{ item.expire | default('99999') }} {{ item.user }}"
+        warn: false
+      changed_when: false
+      ignore_errors: true
+      with_items: "{{ dmz_local_sysadmin + dmz_local_extra|default([]) }}"
+      loop_control:
+        label: "{{ item.user }}"
+
+    - name: Apply SSH Public Keys
+      authorized_key:
+        user: "{{ item.user }}"
+        key: "{{ item.key }}"
+      with_items: "{{ dmz_local_sysadmin + dmz_local_extra|default([]) }}"
+      when: item.key is defined
+      loop_control:
+        label: "{{ item.user }}"
+
+    - name: Remove any users removed
+      user:
+        name: "{{ item }}"
+        remove: true
+        state: absent
+      with_items: "{{ dmz_removed_users | default([]) }}"

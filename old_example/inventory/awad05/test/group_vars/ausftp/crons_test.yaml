@@ -1,0 +1,13 @@
+# This list of crons only get applied to the Test AUSFTP hosts.  
+# A seperate list will exist for different environments for crons that are unique.
+
+
+ausftp_crons_test:
+  - name: example_test
+    user: example3
+    state: absent
+    comment: This is just an example, only for demonstration
+    minute: "23"
+    hour: "9"
+    job: "touch /tmp/example3_cron_test"
+

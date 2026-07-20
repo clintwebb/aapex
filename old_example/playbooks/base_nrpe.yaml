@@ -1,0 +1,114 @@
+- name: NRPE (nagios)
+  hosts: all
+  gather_facts: no
+  become: yes
+
+  handlers:
+    - name: reload firewalld
+      service: name=firewalld state=reloaded
+    - name: reload nrpe
+      service: name=nrpe state=reloaded
+
+  tasks:
+
+    - name: Sudoers (nrpe)
+      copy:
+        dest: /etc/sudoers.d/nrpe
+        owner: root
+        group: root
+        mode: '0400'
+        content: |
+          # This file is managed by Ansible; changes may be overwritten
+          %nrpe    ALL=(root) NOPASSWD: /opt/nessus_agent/sbin/nessuscli agent status
+
+    - name: Required Packages
+      package:
+        name:
+          - nrpe
+          - nagios-plugins-disk
+          - nagios-plugins-dns
+          - nagios-plugins-http
+          - nagios-plugins-load
+          - nagios-plugins-log
+          - nagios-plugins-ntp
+          - nagios-plugins-procs
+          - nagios-plugins-swap
+          - nagios-plugins-uptime
+          - nagios-plugins-users
+        state: present
+
+    - name: Nagios Config
+      copy:
+        dest: /etc/nagios/nrpe.cfg
+        owner: root
+        group: nrpe
+        mode: '0640'
+        content: |
+          log_facility=daemon
+          pid_file=/run/nrpe/nrpe.pid
+          server_port=5666
+          nrpe_user=nrpe
+          nrpe_group=nrpe
+          allowed_hosts=172.20.14.70,172.20.14.71,172.20.14.63,127.0.0.1
+          dont_blame_nrpe=1
+          debug=0
+          command_timeout=60
+          connection_timeout=300
+          include_dir=/etc/nrpe.d/
+      notify: reload nrpe
+
+    - name: Copy Base NRPE config
+      copy:
+        src: "{{ item }}"
+        dest: /etc/nrpe.d
+      with_fileglob: "files/base/nagios/nrpe.d/*.cfg"
+      notify: reload nrpe
+
+    - name: Ensure nagios scripts directory exists.
+      file:
+        dest: /opt/scripts/nagios
+        state: directory
+        owner: root
+        group: sysadmin
+        mode: '0755'
+
+    - name: Copy Nagios Scripts
+      copy:
+        src: "{{ item }}"
+        dest: /opt/scripts/nagios/
+        owner: root
+        group: root
+        mode: '0755'
+      with_fileglob: "files/base/nagios/scripts/*"
+
+    - name: nrpe service started and enabled
+      service:
+        name: nrpe
+        enabled: yes
+        state: started
+
+    - name: permit traffic in default zone for nrpe service
+      firewalld:
+        service: nrpe
+        permanent: true
+        immediate: true
+        state: enabled
+      notify: reload firewalld
+
+    - name: Local NRPE Accounts - Set Expire
+      shell:
+        cmd: "passwd -x 99999 nrpe"
+        warn: false
+      changed_when: false
+      ignore_errors: true
+
+    - name: NRPE Agent SELinux sudo access
+      seboolean:
+        name: nagios_run_sudo
+        state: yes
+        persistent: yes
+
+    - name: NRPE Agent SELinux Permissive
+      selinux_permissive:
+        name: nrpe_t
+        permissive: true

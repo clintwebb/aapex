@@ -1,0 +1,29 @@
+- name: Bash Prompt
+  hosts: all
+  gather_facts: no
+  become: yes
+
+  tasks:
+
+    - name: System Environment file for Prompt
+      copy:
+        dest: /etc/profile.d/00-ausiex_environment.sh
+        mode: 0644
+        content: |
+          export SYSTEM_ENVIRONMENT={{ system_env }}
+
+    - name: Set default bash prompt
+      copy:
+        dest: /etc/profile.d/prompt.sh
+        src: files/base/prompt.sh
+        owner: root
+        group: root
+        mode: 0644
+      
+    - name: Remove other bash prompt files
+      file:
+        dest: "/etc/profile.d/{{ item }}"
+        state: absent
+      with_items: 
+        - cas_bash_prompt.sh
+        - prompt_bash.sh

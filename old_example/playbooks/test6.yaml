@@ -1,0 +1,25 @@
+- hosts: "{{ ansible_limit | default(omit) }}"
+  become: all
+
+  vars:
+    one: 
+      va:
+        info: go for it
+      vb:
+        info: well do
+    two:
+      va: 
+        info: no way
+      vb:
+        info: blah blah blah
+        
+    entry: va
+
+  tasks:
+    - debug:
+        var: one[entry]
+
+    
+
+    - debug:
+        msg: "GOGO: {{ one[entry] }}"

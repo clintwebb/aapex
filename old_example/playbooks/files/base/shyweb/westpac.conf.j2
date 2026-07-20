@@ -1,0 +1,46 @@
+<VirtualHost {{ shyweb_westpac_url }}:443>
+  DocumentRoot    "/opt/www/sites/docs"
+  ServerName      {{ shyweb_westpac_url }}
+  ServerAdmin     wmaster@coreservices.com.au
+  ErrorLog        /var/log/httpd/shy.onlineinvesting.westpac.com.au-error_log
+  CustomLog       /var/log/httpd/shy.onlineinvesting.westpac.com.au-access_log shy-audit env=!forwarded
+  CustomLog       /var/log/httpd/shy.onlineinvesting.westpac.com.au-access_log shy-audit-proxy env=forwarded
+  SSLEngine on
+  SSLCipherSuite ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL
+  SSLCertificateFile     /opt/www/etc/ssl/certs/{{ shyweb_westpac_url }}.crt
+  SSLCertificateKeyFile  /opt/www/etc/ssl/private/{{ shyweb_westpac_url }}.key
+  SSLCACertificateFile   /opt/www/etc/ssl/certs/CA.crt
+#  SSLCADNRequestFile     /opt/www/etc/ssl/CA/CA.crt
+  <Files ~ "\.(cgi|shtml|phtml|php3?)$">
+    SSLOptions +StdEnvVars
+  </Files>
+  <Directory /opt/www/sites/>
+    Require all granted
+  </Directory>
+  <Proxy "balancer://shy-app">
+    BalancerMember "ajp://appserver-1:8009" loadfactor=1
+    BalancerMember "ajp://appserver-2:8009" loadfactor=1
+
+    # Host Standby - Only sends traffic if all other members are offline.
+    # BalancerMember "ajp://appserver-2:8009" status=+H
+    # ProxySet lbmethod=bytraffic
+  </proxy>
+  ProxyPass   "/error"       !
+  ProxyPass   "/jmx-console" !
+  ProxyPass   "/"            "balancer://shy-app/"
+  <Location "http://*/">
+    Require all denied
+  </Location>
+  <Location "https://*/">
+    Require all denied
+  </Location>
+  <Location "/jmx-console">
+    Require all denied
+  </Location>
+  <LocationMatch "jmx-console">
+    Require all denied
+  </LocationMatch>
+  SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown downgrade-1.0 force-response-1.0
+  ErrorDocument 403 /error/btmaint.html
+  ErrorDocument 404 /error/btmaint.html
+</VirtualHost>

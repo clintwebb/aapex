@@ -1,0 +1,52 @@
+#!/bin/bash
+# Clinton Webb, 2024
+
+function meminfo() {
+  grep -E "^$1" /proc/meminfo | awk '{print $2}'
+}
+
+warn=10
+crit=5
+
+while getopts ":w:c:" option; do
+  case $option in
+    w) warn=${OPTARG//%};;
+    c) crit=${OPTARG//%};;
+  esac
+done
+
+memTotal=$(meminfo 'MemTotal:')
+memFree=$(meminfo 'MemFree:')
+memCached=$(meminfo 'Cached:')
+memAvail=$(meminfo 'MemAvailable:')
+
+memTotalMB=$(( memTotal / 1024 ))
+memFreeMB=$(( memFree / 1024 ))
+memCachedMB=$(( memCached / 1024 ))
+memAvailMB=$(( memAvail / 1024 ))
+
+totalFree=$(( memFree + memCached ))
+totalFreeMB=$(( totalFree / 1024 ))
+
+totalUsed=$(( memTotal - totalFree))
+totalUsedMB=$(( totalUsed / 1024 ))
+
+memWarn=$(( memTotalMB * ( 100 - warn) / 100 ))
+memCrit=$(( memTotalMB * ( 100 - crit) / 100 ))
+
+perfData="| ram=${totalUsedMB}MB;$memWarn;$memCrit;0;$memTotalMB"
+
+percFree=$(( (totalFree * 100) / memTotal ))
+
+if (( percFree < crit )); then
+  echo "RAM CRITICAL: ${percFree}% ram free ($totalUsedMB/$memTotalMB MB used) $perfData"
+  exit 2
+elif (( percFree < warn )); then
+  echo "RAM WARNING: ${percFree}% ram free ($totalUsedMB/$memTotalMB MB used) $perfData"
+  exit 1
+else
+  echo "RAM OK: ${percFree}% ram free ($totalUsedMB/$memTotalMB MB used) $perfData"
+  exit 0
+fi
+
+

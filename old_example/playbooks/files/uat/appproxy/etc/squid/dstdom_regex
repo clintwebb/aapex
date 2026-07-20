@@ -1,0 +1,117 @@
+#------------------------------------------
+# This config is managed by Ansible.
+#------------------------------------------
+# Regex Whitelist - Please ensure you comment with JIRA Number
+
+(^|\.)aspecthuntley\.com\.au$
+(^|\.)asx\.com\.au$
+(^|\.)asxonline\.com$
+(^|\.)vmware\.com$
+
+# JIRA-18305
+(^|\.)computershare\.com$
+(^|\.)datatoolscloud\.net\.au$
+(^|\.)digicert\.com$
+(^|\.)entrust\.net$
+
+# JIRA-68262
+(^|\.)google\.com$
+(^|\.)iress\.com\.au$
+
+# JIRA-68208
+(^|\.)ksplice\.com$
+(^|\.)live\.com$
+(^|\.)macquarie\.com\.au$
+(^|\.)microsoft\.com$
+
+# JIRA-97460
+(^|\.)sso-mod\.markitqa\.com$
+(^|\.)sso\.markitondemand\.com$
+
+(^|\.)msftconnecttest\.com$
+(^|\.)omniroot\.com$
+(^|\.)omtrdc\.net$
+(^|\.)oracle\.com$
+
+# JIRA-48788
+(^|\.)orientsys\.com\.au
+
+# JIRA-69064
+(^|\.)research-commsec\.wsodqa\.com$
+(^|\.)sun\.com$
+(^|\.)symcb\.com$
+(^|\.)symcd\.com$
+(^|\.)symantec\.com$
+(^|\.)thawte\.com$
+(^|\.)verisign\.com$
+(^|\.)windowsupdate\.com$
+(^|\.)windows\.com$
+
+# Azure Notfication Hub
+(^|\.)nothub-dev\.servicebus\.windows\.net$
+
+# JIRA-80831
+(^|\.)ssllabs\.com$
+
+# JIRA-99232
+(^|\.)datatoolscloud\.net\.au$
+
+# REDHAT CONNECTIVITY
+(^|\.)redhat\.com$
+(^|\.)fedoraproject\.org$
+(^|\.)centos\.org$
+(^|\.)epel\.mirror
+(^|\.)perl\.com$
+^sam2-1\.awad05\.assetware\.com\.au$
+^satellite1-1\.management$
+
+# PUPPET
+(^|\.)puppetlabs\.com$
+
+# COMMVAULT
+(^|\.)commvault\.com$
+
+# Luke - 20210301
+(^|\.)ausiex-uat\.research\.coretrading\.com\.au$
+(^|\.)westpac-uat\.research\.coretrading\.com\.au$
+(^|\.)westpac-sharetrading-uat\.research\.coretrading\.com\.au$
+
+# Labgroup SSO - Luke 20210518
+(^|\.)fid\.api\.clientstaging\.syd\.labgroup\.dev$
+(^|\.)initiate\.api\.clientstaging\.syd\.labgroup\.dev$
+(^|\.)ausiex\.portal\.clientstaging\.syd\.labgroup\.dev$
+
+#JIRA ITSD-1595
+(^|\.)browserstack\.com$
+(^|\.)cloudfront\.net$
+
+# JIRA ITSD-2143
+(^|\.)cisco\.com$
+
+# JIRA ITSD-2142
+(^|\.)istargv-au-aex\.nrifintech\.com$
+
+# JIRA ITSD-6288
+(^|\.)iress\.com$
+
+# JIRA ITSD-7845
+(^|\.)equity\.northonline\.ampaws\.com\.au$
+
+# Required for Windows SOE Build
+(^|\.)chocolatey\.org$
+(^|\.)azureedge\.net$
+(^|\.)powershellgallery\.com$
+
+# ITSD-8602
+(^|\.)ebury\.io$
+(^|\.)qa-api\.markitdigital\.com$
+(^|\.)amazontrust\.com$
+
+# Saxobank
+(^|\.)saxobank\.com$
+(^|\.)logonvalidation\.net$
+
+(^|\.)cboe\.com$
+
+# ITSM-5832
+(^|\.)sandstoneinsights\.com\.au$

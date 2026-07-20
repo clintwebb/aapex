@@ -1,0 +1,47 @@
+# Cortex XDR 
+- name: XDR
+  hosts: all
+  become: yes
+
+  vars:
+
+    # Have noticed that the current ID in the script live on kickstart is different to what was deployed via puppet, and what is is in the kickstart git repository.
+    xdr_distid: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          66346234653239653636616134343763323936623031343933313031353263393034623134623338
+          6439363031346661336366306566376163323466313661610a366434643931343865316161623462
+          33626131613438363437353866386263393937653838393237623534656436343038643935653136
+          3063656262623537660a393338323333626235626266353835316165383933316531616162663238
+          33343461396266373538633363343362343837373733666166366432616536376236636633313462
+          3931643664636632626538396566393734336534333432316531
+    xdr_distserver: https://distributions.traps.paloaltonetworks.com
+    xdr_dir: /etc/panw
+    xdr_file: cortex.conf
+    xdr_proxy: xdrbroker
+    xdr_port: 8888
+    
+
+  tasks:
+    - name: "Ensure directory exists ({{ xdr_dir }})"
+      file:
+        path: "{{ xdr_dir }}"
+        state: directory
+        mode: '755'
+    
+    - name: "XDR Config file ({{ xdr_dir }}/{{ xdr_file }})"
+      copy:
+        dest: "{{ xdr_dir }}/{{ xdr_file }}"
+        owner: root
+        group: root
+        mode: '644'
+        content: |
+          --proxy-list="{{ xdr_proxy }}:{{ xdr_port }}"
+          --distribution-id {{ xdr_distid }}
+          --distribution-server {{ xdr_distserver }}
+      
+    - name: XDR Packages
+      package:
+        state: present
+        name:
+          - cortex-agent
+          - selinux-policy-devel

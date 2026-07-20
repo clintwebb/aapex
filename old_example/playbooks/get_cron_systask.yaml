@@ -1,0 +1,11 @@
+- hosts: all
+  become: yes
+
+  tasks:
+
+    - shell:
+        cmd: "cat /var/spool/cron/systask"
+      register: out
+
+    - debug: var=out
+

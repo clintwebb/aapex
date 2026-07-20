@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>java_debugger</short>
+  <description>java_debugger</description>
+  <port protocol="tcp" port="5025" />
+</service>

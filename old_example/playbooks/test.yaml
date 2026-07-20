@@ -1,0 +1,44 @@
+- hosts: "{{ ansible_limit | default(omit) }}"
+  become: yes
+  gather_facts: yes
+
+  vars:
+    system_env: BLAH
+    ausiex_example_private_key: "{{ lookup('file', '{{ files_env_location }}/certificates/ctest.key.vaulted') }}"
+ 
+  tasks:
+
+#     - getent:
+#         database: passwd
+
+#     - debug: 
+#         var: ansible_facts.getent_passwd
+
+#    - debug:
+#        msg: "{{ lookup('file', 'files/ctest.key.vaulted') | string | trim }}"
+#        msg: "{{ lookup('file', '{{ files_env_location }}/certificates/ctest.key.vaulted') }}"
+#         msg: "{{ ausiex_example_private_key }}"
+
+#    - name: Copy vaulted file
+#      copy:
+#        src: files/ctest.key.vaulted
+#        dest: /tmp/ctest.key
+#        decrypt: yes
+#      diff: no
+
+    - name: Block Test
+      include_tasks: test2.yaml
+      vars: 
+        ll_name: "{{ item.name }}"
+        ll_files: "{{ item.files }}"
+      with_items:
+        - name: one
+          files: 
+            - one_one
+            - one_two
+            - one_three
+        - name: two
+          files: 
+            - two_one
+            - two_two
+            - two_three

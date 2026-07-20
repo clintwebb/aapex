@@ -1,0 +1,43 @@
+--- 
+- name: Certificate Chains
+  hosts: all
+  gather_facts: no
+  become: yes
+
+  handlers:
+    - name: pki reload
+      shell:
+        cmd: "update-ca-trust extract"
+
+  tasks:
+    - name: AusiexInternalCA
+      copy:
+        dest: /etc/pki/ca-trust/source/anchors/AusiexInternalCA.crt 
+        mode: '0644'
+        content: |
+          -----BEGIN CERTIFICATE-----
+          MIID8jCCAtqgAwIBAgIQdT3CQbrnLdNyswHYSnXICzANBgkqhkiG9w0BAQsFADCB
+          kjELMAkGA1UEBhMCQVUxLzAtBgNVBAoMJkF1c3RyYWxpYW4gSW52ZXN0bWVudCBF
+          eGNoYW5nZSBMaW1pdGVkMR8wHQYDVQQLDBZJbmZvcm1hdGlvbiBUZWNobm9sb2d5
+          MQwwCgYDVQQIDANOU1cxEjAQBgNVBAMMCUF1c2lleCBDQTEPMA0GA1UEBwwGU3lk
+          bmV5MB4XDTIyMDQxNDAxMDU1MVoXDTMyMDQxNDAyMDU1MVowgZIxCzAJBgNVBAYT
+          AkFVMS8wLQYDVQQKDCZBdXN0cmFsaWFuIEludmVzdG1lbnQgRXhjaGFuZ2UgTGlt
+          aXRlZDEfMB0GA1UECwwWSW5mb3JtYXRpb24gVGVjaG5vbG9neTEMMAoGA1UECAwD
+          TlNXMRIwEAYDVQQDDAlBdXNpZXggQ0ExDzANBgNVBAcMBlN5ZG5leTCCASIwDQYJ
+          KoZIhvcNAQEBBQADggEPADCCAQoCggEBAMOUIVmtDk9dwz1Ukea7Im8nZfQiHFzM
+          9O8q/grSRn8j2fk0FL6rEd2Ca7wZ3acscY7try8vIllo7bUdZAVsWb5vvEBFxx5K
+          tT+Mz1cwNQDT5HBYB1Ftn5WRrVlRWpXRKa45rfNOmt4OY9hmB29mI51p0K4DELn1
+          U+preV6KgPoPDEUe0DDnwtsTjhfT6mNAl7GrHFWQOHsjtbhqTwM6Ejk2oNfu3qca
+          5SJH6+RsAInGxpMhi2Uh/yXcSYkzUhTZPdcqm597FvbGSDiurKpiVyd8zuWgRDpN
+          ZiIUNYFe2ducBL6ixicrRNvGxrpGQj6BfmpbH3CpLpKeHkPs99jrnj8CAwEAAaNC
+          MEAwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUxeu6OjE5sv9umUz5BVRS2XE2
+          w1YwDgYDVR0PAQH/BAQDAgGGMA0GCSqGSIb3DQEBCwUAA4IBAQC/6bo4NZ4vejsq
+          fQD1r4ELDPEN5yrgM2z9a/EZvYSwdEHMMvBrKCCyaJkLTXb2/j5ylJ2eicMdLyKU
+          +9IkTQrRzT6N/Gt0J/PXKfkRKXpMBige5w0+dCk4jLGInkdvgFjJybqROpGN8mlP
+          nA0Fq7E9kUHbCreMj01fnCuot7/bVHZ/Wu54BKF3++an/AJdpb1YGlGAgk7PCQin
+          44iU2ho437YEaV5QNXE8KmeiyLMIzy3qNlcRiUE4FNMk2ZoMM15Cj3lbQvwsBlhn
+          VO75Zuvtqs0YeENZbhWWpxLuknAe7TWShX5Qvd3DfHXIlGPPC6FIwo9f3a0XfvLc
+          UdhpJ7X7
+          -----END CERTIFICATE-----
+      notify: pki reload
+

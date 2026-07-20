@@ -1,0 +1,10 @@
+system_env: TEST2
+
+resolv_conf: |
+  # Managed by Ansible.
+  search test2 test nonprod.mgt.internal.ausiex.com management
+  nameserver 172.26.10.1
+  nameserver 172.26.10.2
+  nameserver 172.26.10.6
+  nameserver 172.26.10.7
+

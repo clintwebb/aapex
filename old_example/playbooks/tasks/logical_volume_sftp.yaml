@@ -1,0 +1,54 @@
+# This is a little complicated.
+# When moving an SFTP clients data to a seperate LV, we want to disable the account temporarily during the transfer
+# The easiest option is to remove the account from the 'sftp' group, and add it to another group that blocks access.
+#
+# In this case, we need to check if the volume has already been moved.  If it has, then we do not need to do any 
+# pre-steps (but we will run the logical_volume tasks anyway).
+#
+# If it has not been migrated, then we need to do some steps, and afterwards, resolve them.
+
+
+# Check if the path is already in the expected LV.
+- set_fact:
+    mdvs_out_vol: "/dev/mapper/{{ mdv_sftp.vg | default('vg_sys') }}-{{ mdv_sftp.lv }}"
+
+- name: "Check if already accomplished: {{ mdv_sftp.mnt }} on {{ mdvs_out_vol }}"
+  shell: "set -o pipefail && df --output=source {{ mdv_sftp.mnt }} | tail -n +2"
+  changed_when: false
+  check_mode: false
+  ignore_errors: true
+  register: lvms_facts
+
+- name: "Disable account '{{ mdv_sftp.name }}'"
+  when: lvms_facts.stdout != mdvs_out_vol
+  block:
+    - name: "Remove the '{{mdv_sftp.name }}' account from the 'sftp' group, and add to 'sftpblock'"
+      user:
+        name: "{{ mdv_sftp.name }}"
+        groups: 
+          - sftpblock
+        
+    - name: "Run a script to wait for the account to disconnect from sftp."
+      shell:
+        cmd: |
+          DD=$(ps -axl | grep 'sshd: {{ mdv_sftp.name }}@notty'|grep -v grep|wc -l); 
+          while [[ $DD -gt 0 ]]; do 
+            sleep 1; 
+            DD=$(ps -axl | grep 'sshd: {{ mdv_sftp.name }}@notty'|grep -v grep|wc -l); 
+          done
+  # end block
+
+- include_tasks: logical_volume.yaml
+  vars:
+    mdv:
+      mnt: "/data/sftp/{{ mdv_sftp.name }}"
+      lv: "lv_sftp_{{ mdv_sftp.name }}"
+      vg: "{{ mdv_sftp.vg | default('vg_sys') }}"
+      lv_size: "{{ mdv_sftp.lv_size | default('128M') }}"
+      mnt_mode: "{{ mdv_sftp.mnt_mode | default('755') }}"
+
+- name: "Ensure '{{ mdv_sftp.name }}' account is in the 'sftp' group"
+  user:
+    name: "{{ mdv_sftp.name }}"
+    groups:
+      - sftp

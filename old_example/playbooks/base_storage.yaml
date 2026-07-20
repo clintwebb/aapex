@@ -1,0 +1,25 @@
+# Storage is allocated and configured.
+---
+- name: Initial Storage configuration
+  hosts: local_storage,!ignore_local_storage
+  become: yes
+
+  tasks:
+    - include_tasks: tasks/logical_volume.yaml
+      vars:
+        mdv:
+          services_stop: "{{ tt_item.services_stop | default('none') }}"
+          services_start: "{{ tt_item.services_start | default('none') }}"
+          mnt: "{{ tt_item.mnt }}"
+          fstype: "{{ tt_item.fstype | default('xfs') }}"
+          mnt_mode: "{{ tt_item.mnt_mode | default('0755') }}"
+          mnt_opts: "{{ tt_item.mnt_opts | default('defaults,nodev') }}"
+          mnt_owner: "{{ tt_item.mnt_owner | default('root') }}"
+          mnt_group: "{{ tt_item.mnt_group | default('root') }}"
+          vg: "{{ tt_item.vg | default('vg_sys') }}"
+          lv: "{{ tt_item.lv }}"
+          lv_size: "{{ tt_item.size }}"
+      with_items: "{{ local_storage + local_storage_extra | default([]) }}"
+      loop_control:
+        loop_var: tt_item
+        label: "{{ tt_item.lv }}"

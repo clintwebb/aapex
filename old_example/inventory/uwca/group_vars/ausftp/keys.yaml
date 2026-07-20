@@ -1,0 +1,74 @@
+# SFTP accounts structure can be complicated.  Will evaluate suitable structure for easy on-going maintenance.
+# The key problem is:
+#   - There are lots of accounts.. if we seperate the structures, then we have to keep maintaining the info in different trees.
+#   - The accounts will be the same in all environments
+#   - The directory structure 'should' be the same in all environments.
+#   - The authentication keys will be _different_ in all environments.
+---
+
+scheduler_key_uat: "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAIBmHglLRplPM9V2aPQaJZJQz9OXlH+vgtdFj1vxdMb73QbFdUPnUo0qUEn3ls9dFuZqXFw3BdlwJcXu9XNQa91FRX8MqQF5PHKB6JSpod+RMQ/+X/39CZoxrl3I6bp2XS5KO69AkuUzwrBvxL0C/+Uyjp2Ip3imtGMj54OwmwT0AQ== u-ctxft2-1"
+
+#  - name: example
+#    authorized_keys: "ssh-rsa .... "
+
+ausftp_keys:
+  - name: aas
+  - name: amgsuper
+  - name: asgard
+  - name: aspect
+  - name: axa
+  - name: bankwest
+  - name: bgl
+  - name: broadridge
+  - name: calg3
+  - name: ccube
+  - name: cfscs
+  - name: coin
+  - name: commbiz
+  - name: commsec
+  - name: complyadvantage
+    authorized_keys: "{{ scheduler_key_uat }}"
+  - name: count
+  - name: csuper
+  - name: coretx
+  - name: dotdigital
+  - name: esuper
+  - name: equityandsuper
+  - name: firstwrap
+  - name: hartleys
+  - name: highway
+  - name: hnwplanningpty
+  - name: hub24
+  - name: ids
+  - name: ingd
+  - name: investmentlink
+  - name: iress
+  - name: labgroup
+  - name: lmssftp
+  - name: m2wealth
+  - name: macquarie
+  - name: mapreps
+  - name: mbl
+  - name: mdaoperator
+  - name: midwinter
+  - name: moneymarketsaustralia
+  - name: morgans
+  - name: mstar
+  - name: netwealth
+  - name: nrifintech
+  - name: oasis
+  - name: openmarkets
+  - name: ordminnett
+  - name: penson
+  - name: platfrmpls
+  - name: plutosoft
+  - name: powerwrap
+  - name: pershing
+  - name: praemium
+  - name: rwragg
+  - name: sentinel
+  - name: ssc
+  - name: stg
+  - name: supermate
+  - name: wibs
+  - name: wsl

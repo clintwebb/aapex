@@ -1,0 +1,8 @@
+resolv_conf: |
+  # Managed by Ansible.
+  search nonprod.mgt.internal.ausiex.com mgt.internal.ausiex.com awad05.assetware.com.au
+  nameserver 172.26.10.1
+  nameserver 172.26.10.2
+  nameserver 172.26.10.6
+  nameserver 172.26.10.7
+

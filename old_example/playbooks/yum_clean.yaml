@@ -1,0 +1,9 @@
+- name: Clear out the YUM Cache
+  hosts: "{{ ansible_limit | default(omit) }}"
+  become: yes
+
+  tasks:
+    - name: Clear out the YUM Cache
+      command: yum clean all
+      args:
+        warn: false

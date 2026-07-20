@@ -1,0 +1,83 @@
+# Base Repositories.
+---
+- name: Base Repositories
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  tasks:
+
+    - name: Check RPM DB is OK
+      include_tasks: tasks/rpm_db.yaml
+
+    - name: Redhat Satellite Subscription
+      when: ansible_facts['distribution'] == 'RedHat'
+      block:
+
+        - name: Redhat 7
+          when: ansible_facts['distribution_major_version'] == "7"
+          block:
+  
+            - name: Standard Repositories (Redhat7)
+              rhsm_repository:
+                name:
+                  - rhel-7-server-rpms
+                  - rhel-7-server-optional-rpms
+                  - rhel-7-server-satellite-client-6-rpms
+              ignore_errors: true
+              # currently ignoring errors, due to licensing issues.  Once corrected, ignore should be removed.
+
+            - name: Removed Repositories (Redhat7)
+              rhsm_repository:
+                name:
+                  - rhel-7-server-satellite-tools-6.10-rpms
+                  - rhel-7-server-satellite-utils-6.11-rpms
+                state: disabled
+              ignore_errors: true
+  
+        - name: Redhat 8
+          when: ansible_facts['distribution_major_version'] == "8"
+          block:
+  
+            - name: Standard Repositories (Redhat8)
+              rhsm_repository:
+                name:
+                  - rhel-8-for-x86_64-baseos-rpms
+                  - rhel-8-for-x86_64-appstream-rpms
+                  - satellite-client-6-for-rhel-8-x86_64-rpms
+              ignore_errors: true
+              # currently ignoring errors, due to licensing issues.  Once corrected, ignore should be removed.
+
+            - name: Removed Repositories (Redhat8)
+              rhsm_repository:
+                name:
+                  - satellite-tools-6.10-for-rhel-8-x86_64-rpms
+                  - satellite-utils-6.12-for-rhel-8-x86_64-rpms
+                state: disabled
+              ignore_errors: true
+    
+        - name: Redhat 9
+          when: ansible_facts['distribution_major_version'] == "9"
+          block:
+  
+            - name: Standard Repositories (Redhat9)
+              rhsm_repository:
+                name:
+                  - rhel-9-for-x86_64-baseos-rpms
+                  - rhel-9-for-x86_64-appstream-rpms
+                  - satellite-client-6-for-rhel-9-x86_64-rpms
+              ignore_errors: true
+              # currently ignoring errors, due to licensing issues.  Once corrected, ignore should be removed.
+              
+        - name: "Ensure Ausiex Repo is registered"
+          yum_repository:
+            name: ausiex
+            description: "Ausiex EL{{ ansible_facts['distribution_major_version'] }} {{ repo_ausiex_name }}"
+            baseurl: "https://{{ kickstart_dns }}/repos/yum/el{{ ansible_facts['distribution_major_version'] }}-{{ repo_ausiex_env }}/"
+            proxy: _none_
+            gpgcheck: no
+            skip_if_unavailable: true
+    
+  
+...
+

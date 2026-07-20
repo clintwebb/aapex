@@ -1,0 +1,19 @@
+crypto_policy: LEGACY
+
+storage_size_opt: 20g
+
+local_storage_extra:
+  - lv: lv_log_shy
+    size: "{{ storage_size_log_shy | default('10g') }}"
+    mnt: /var/log/shy
+    mnt_mode: '02750'
+    mnt_owner: 'shyapps'
+    mnt_group: 'shylogs'
+    services_stop: 
+      - shy-all.target
+      - elastic-agent.service
+    services_start:
+      - shy-all.target
+      - elastic-agent.service
+
+elastic_token: "{{ elastic_tokens.linux_shyapps_dev }}"

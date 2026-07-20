@@ -1,0 +1,11 @@
+# SFTP Configuration
+
+{% for acct in sftp_accounts if acct.absent is undefined or acct.absent == false %}
+$AddUnixListenSocket    /data/sftp/{{ acct.name }}/dev/log
+{% endfor %}
+
+:programname, isequal, "internal-sftp"  -/var/log/sftp.log
+:programname, isequal, "internal-sftp"  ~
+:programname, isequal, "sshd"           -/var/log/sshd.log
+:programname, isequal, "sshd"           ~
+

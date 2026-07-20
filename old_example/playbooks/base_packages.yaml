@@ -1,0 +1,67 @@
+# Base Packages that need to be installed on all servers (or ensure they are not installed).
+---
+- name: Base Packages
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  tasks:
+
+    - name: Check RPM DB is OK
+      include_tasks: tasks/rpm_db.yaml
+
+    - name: Ensure Absent Packages are not installed (on any servers).
+      package:
+        name:
+          - dhcp
+          - falcon-sensor
+          - ISecGRt
+          - MFEcma
+          - MFErt
+          - prelink
+          - rsh
+          - rsh-server
+          - splunk
+          - splunkforwarder
+          - talk-server
+          - telnet-server
+          - ypserv
+        state: absent
+
+    - name: Installed Packages (on all servers)
+      package:
+        name:
+          - bash-completion
+          - bind-utils
+          - curl
+          - lsof
+          - nc
+          - net-tools
+          - openssl
+          - perf
+          - psmisc
+          - rsync
+          - selinux-policy-devel
+          - sysstat
+          - telnet
+          - traceroute
+          - unzip
+          - vim-enhanced
+          - wget
+          - yum-utils
+        state: present
+
+
+- name: Base Packages (non-physical)
+  hosts: all,!physical
+  become: yes
+
+  tasks:
+
+    - name: Installed Packages (for vmware guests)
+      package:
+        name:
+          - open-vm-tools
+        state: present
+
+...

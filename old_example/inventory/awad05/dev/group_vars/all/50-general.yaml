@@ -1,0 +1,20 @@
+# This is for general variables.... mostly for single, isolated variables.
+# anything where multiple variables are presented, should be in a file specifically for that.
+
+general_env: dev
+system_env: "{{ general_env | upper }}"
+files_env_location: "files/{{ general_env }}"
+
+kickstart_dns: "{{ kickstart_nonprod }}"
+
+ausiex_webserver_certificate: ausiex_webserver_certificate_20241108.p12
+
+cron_systask_patch:
+  hour: "3"
+  minute: "0"
+
+cron_systask_audit:
+  hour: "7"
+  minute: "56"
+
+

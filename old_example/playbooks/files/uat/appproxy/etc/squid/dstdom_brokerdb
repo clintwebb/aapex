@@ -1,0 +1,8 @@
+#-----------------------------------
+# This config is managed by Ansible.
+#-----------------------------------
+# Restricted access to sources required by Broker DB
+
+# ASX msi-api, particularly for Reference Point files.
+^api\.asxonline\.com$
+(^|\.)cboe\.com$

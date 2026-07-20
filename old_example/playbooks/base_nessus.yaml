@@ -1,0 +1,42 @@
+- name: Nessus
+  hosts: all
+  become: yes
+
+  vars:
+    nessus_proxy: nessusproxy
+    nessus_port: 3128
+    nessus_token: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          35313363393036313036643634396363316661346233396166393632643939313165663434623162
+          3132366662613363646164383831653231336630646162650a383237363866616461326366356438
+          66656366633065316662663238646665653036343739303332396131313536393231336332353632
+          3066373238623333650a653636643066343438303335613230396332393162623336373634393163
+          35633539643435633434393663303231313139646337623037346163396538633135386665373064
+          36313262343730613666626663353161386663316132633335393634663631343438656661303033
+          62376363396438666434393238653732396433646461353730613039353663626534613533363435
+          30383932656438646533
+  
+  tasks:
+
+    - name: NessusAgent package installed.
+      package: name=NessusAgent state=present     
+
+    - name: Check Nessus Link Status
+      shell:
+        cmd: "/opt/nessus_agent/sbin/nessuscli agent status | grep -v 'Linked to: None' | grep 'Linked to:'"
+      ignore_errors: true
+      changed_when: false
+      check_mode: false
+      register: nessus_out
+
+    - name: Link NessusAgent
+      shell:
+        cmd: "/opt/nessus_agent/sbin/nessuscli agent link --key='{{ nessus_token }}' --cloud --proxy-host={{ nessus_proxy }} --proxy-port={{ nessus_port }}"
+      when: nessus_out.rc != 0
+
+    - name: Ensure NessusAgent service enabled.
+      service: name=nessusagent enabled=yes state=started
+        
+...
+
+

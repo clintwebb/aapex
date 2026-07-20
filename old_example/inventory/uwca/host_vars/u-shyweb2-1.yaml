@@ -1,0 +1,10 @@
+# For servers that have multiple IP's allocated.
+ip_list:
+  - 172.26.163.99/24
+  - 172.26.163.55/32
+  - 172.26.163.56/32
+
+etc_hosts_extra: |
+  172.26.163.55   v.shy.onlineinvesting.westpac.com.au shy.westpac-uat.coretrading.com.au
+  172.26.163.56   v1.webiress.onlineinvesting.westpac.com.au
+

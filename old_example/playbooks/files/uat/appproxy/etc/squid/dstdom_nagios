@@ -1,0 +1,7 @@
+#------------------------------------------
+# This config is managed by Ansible.
+#------------------------------------------
+# Domains that are allowed from Nagios and Monitoring services.
+
+# ITSM-579 - Pushover Notifications
+(^|\.)pushover\.net$

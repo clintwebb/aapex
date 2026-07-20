@@ -1,0 +1,12 @@
+resolv_conf: |
+  # Managed by Ansible.
+  search test mgt.internal.ausiex.com management
+  nameserver 172.26.10.1
+  nameserver 172.26.10.2
+  nameserver 172.26.10.6
+  # NOTE: the libc resolver may not support more than 3 nameservers.
+  # The nameservers listed below may not be recognized.
+  nameserver 172.26.10.7
+
+
+elastic_token: "{{ elastic_tokens.linux_squid_test }}"

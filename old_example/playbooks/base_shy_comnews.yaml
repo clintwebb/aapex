@@ -1,0 +1,7 @@
+- name: Comnews
+  hosts: shy_comnews
+  become: yes
+
+  tasks:
+    - debug:
+        msg: "Nothing to do yet"

@@ -1,0 +1,48 @@
+# For redhat servers, ensure they are registered with satellite subscription
+# The main purpose of this, is:
+#  1. If a file doesnt exist which indicates it is registered
+#     then: check the rhsm config to see if it looks registered.
+#
+      
+---
+- name: Satellite
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  tasks:
+    - name: Redhat Satellite Subscription
+      when: ansible_facts['distribution'] == 'RedHat'
+      block:
+
+        - name: Set timeouts
+          lineinfile:
+            path: /etc/yum.conf
+            regexp: 'timeout='
+            insertafter: '^\[main\]'
+            line: "timeout={{ yum_timeout | default('10') }}"
+
+        - name: Set retries
+          lineinfile:
+            path: /etc/yum.conf
+            regexp: 'retries='
+            insertafter: '^\[main\]'
+            line: "retries={{ yum_retries | default('2') }}"
+
+      
+        # NOTE: This will run even in 'check' mode, and will create the file if appropriate.  Because it affects the remaining tasks to be 
+        # able to function appropriately.
+        - name: Check Satellite Registration
+          shell:
+            cmd: |
+              grep -q 'hostname = i-rhsat2-2.mgt.internal.ausiex.com' /etc/rhsm/rhsm.conf && touch /etc/rhsm/.registered
+              true
+            creates: /etc/rhsm/.registered
+          check_mode: false
+
+        - name: Register Satellite (will likely take 15 minutes)
+          script:
+            cmd: files/base/satellite_join.sh
+            creates: /etc/rhsm/.registered
+    
+...

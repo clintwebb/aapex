@@ -1,0 +1,8 @@
+local_storage_extra:
+  - lv: lv_data
+    vg: "{{ storage_vg_data | default('vg_sys') }}"
+    size: "{{ storage_size_data | default('1g') }}"
+    mnt: /data
+
+
+

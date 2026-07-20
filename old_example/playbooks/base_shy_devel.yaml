@@ -1,0 +1,41 @@
+# SHY/SHYNY developers require redhat servers for development and testing.
+---
+- name: SHY Developer Workstations
+  hosts: shy_devels,shy_devels_7
+  gather_facts: no
+  become: yes
+
+  handlers:
+    - name: reload firewalld
+      service: name=firewalld state=reloaded
+
+  tasks:
+
+    - name: permit traffic in default zone
+      firewalld:
+        service: "{{ item }}"
+        permanent: true
+        immediate: true
+        state: enabled
+      with_items:
+        - java_debugger
+        - vnc-server
+      notify: reload firewalld
+
+    - name: Installed Packages
+      package:
+        name:
+          - git
+        state: present
+
+    - name: Sudoers for linuxdevuser group for SHY Developers Workstations
+      copy:
+        dest: /etc/sudoers.d/shy_developers
+        owner: root
+        group: root
+        mode: '0400'
+        content: |
+          # This file is managed by Ansible; changes may be overwritten
+          %linuxdevuser ALL=(root)  ALL
+
+...

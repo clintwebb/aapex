@@ -1,0 +1,114 @@
+# For security reason, certain SSH config parameters are specified.
+# THIS IS FOR GENERAL DEPLOYMENT.  OTHER CHANGES TO THIS FILE MAY ALSO BE DONE IN OTHER PLAYBOOKS.
+#
+#  NOTE:
+#  ---------------
+#    It is not suitable to deploy a standard template file.. instead changes are made individually.
+#    This makes it slightly more complicated to maintain but we are managing multiple versions of hosts.
+#    Also, for convenience some changes to these config files might also be done in other playbooks.
+#
+#    For example, to specifiy a config change, will likely need to adjust the file with the 'lineinfile' module.
+#
+# Example Output
+#     #ClientAliveInterval 0
+#     ClientAliveInterval 900
+#
+# This will also contain some extra bits that are somewhat related to SSH stuff.
+#
+# _________________________________________________________________
+#|                   __               __                           |
+#|        |  |  /\  |__) |\ | | |\ | / _`                          |
+#|        |/\| /~~\ |  \ | \| | | \| \__>                          |
+#|_________________________________________________________________|
+#|                                                                 |
+#|  Any miss-spelling or typo can cause SSH to fail.               |
+#|  Resulting in challenges connecting to the server.              |
+#|  Take extra care in making sure that no issues will be caused.  |
+#|_________________________________________________________________|
+---
+
+- name: SSH Config
+  hosts: all
+  become: yes
+ 
+  handlers:
+    - import_tasks: handlers/sshd_reload.yaml
+
+  tasks:
+
+    - name: Copy MOTD content
+      copy: 
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items:
+        - src: files/base/issue
+          dest: /etc/issue
+        - src: files/base/issue.net
+          dest: /etc/issue.net
+      notify: reload sshd
+
+    # Modify Config Lines one at a time.
+    # Example:
+    #     #ClientAliveInterval 0
+    #     ClientAliveInterval 900
+    - name: SSHD Configuration - Lines
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "{{ item.regexp | default(omit) }}"
+        line: "{{ item.line | default(omit) }}"
+        insertafter: "{{ item.insertafter | default(omit) }}"
+        state: "{{ item.state | default(omit) }}"
+      loop_control:
+        label: "{{ item.name }}"
+      with_items:
+        - name: Banner
+          regexp: '^Banner '
+          line: 'Banner /etc/issue.net'
+          insertafter: '^#Banner'
+        - name: MaxAuthTries
+          regexp: '^MaxAuthTries'
+          line: 'MaxAuthTries 4'
+          insertafter: '^#MaxAuthTries'
+        - name: ClientAliveInterval
+          regexp: '^ClientAliveInterval'
+          line: "ClientAliveInterval {{ sshd_config_ClientAliveInterval | default('60') }}"
+          insertafter: '^#ClientAliveInterval'
+        - name: ClientAliveCountMax
+          regexp: '^ClientAliveCountMax'
+          line: "ClientAliveCountMax {{ sshd_config_ClientAliveCountMax | default('3') }}"
+          insertafter: '^#ClientAliveCountMax'
+        - name: ssh_host_dsa_key
+          regexp: '^HostKey /etc/ssh/ssh_host_dsa_key'
+          state: absent
+        - name: X11Forwarding
+          regexp: '^X11Forwarding'
+          line: "X11Forwarding {{ sshd_config_X11Forwarding | default('no') }}"
+          insertafter: '^#X11Forwarding'
+      notify: reload sshd
+
+    - name: Get login account details
+      command: whoami
+      changed_when: false
+      check_mode: false
+      become: false
+      register: whoami
+
+    - name: Set Root Password
+      when: whoami.stdout != 'root'
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PermitRootLogin'
+        line: 'PermitRootLogin no'
+        insertafter: '^#PermitRootLogin'
+      notify: reload sshd
+      
+    - name: Remove Redhat-9 PermitRootLogin
+      when: whoami.stdout != 'root'
+      file:
+        path: /etc/ssh/sshd_config.d/01-permitrootlogin.conf
+        state: absent
+      notify: reload sshd
+

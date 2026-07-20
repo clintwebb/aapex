@@ -1,0 +1,17 @@
+# NOTE that all servers that are not connected to ActiveDirectory, need to be included at some level in the 'dmz' group.  Some 
+# functionality will exclude servers that are in the dmz group.
+#
+# It is also acceptable for servers to be listed in other inventories (like awad05) but also be in a 'dmz' group in that inventory.  This 
+# mostly if the server is more likely associated with that inventory.  An example of this is the shyedgesx servers.  These are lumped in 
+# with the other shyny servers, so should be included in the appropriate inventory, but should also be included in the 'dmz' group in that 
+# inventory so that base functionality does not fail when attempting to run the base realmd stuff.
+ 
+[all:children]
+
+# If any server needs to have nightly runs skipped, include in this group.
+[skip_nightly]
+
+[skip_nightly:children]
+
+
+[dmz]

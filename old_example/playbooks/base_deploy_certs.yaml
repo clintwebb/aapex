@@ -1,0 +1,26 @@
+# SHYNY Certificates that also need to be applied to Legacy SHY Servers
+# NOTE that this currently does not restart services currently relying on these certificates.
+
+- name: Deployment Certificates
+  hosts: shy_app,shy_click
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: "copy cert file ({{ ausiex_webserver_certificate }})"
+      ansible.builtin.copy:
+        src: "{{ files_env_location }}/{{ ausiex_webserver_certificate }}"
+        dest: /opt/shyapps/var/security/stores/
+        owner: shyapps
+        group: shyapps
+        mode: '0644'
+      
+    - name: "Ensure Symbolic link points to ({{ ausiex_webserver_certificate }})"
+      ansible.builtin.file:
+        src: "/opt/shyapps/var/security/stores/{{ ausiex_webserver_certificate }}"
+        dest: /opt/shyapps/var/coherence-extend-server.p12
+        owner: shyapps
+        group: shyapps
+        state: link
+        force: true
+      

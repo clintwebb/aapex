@@ -1,0 +1,243 @@
+# SHYNY Base
+---
+- name: SHYNY (general)
+  hosts: shyny_apps,shy_devels
+  become: yes
+  gather_facts: yes
+
+  handlers:
+    - name: reload firewalld
+      service: name=firewalld state=reloaded
+
+  tasks:
+
+    - name: Directory /opt/shy
+      ansible.builtin.file:
+        path: /opt/shy
+        owner: shyapps
+        group: shyapps
+        mode: '2775'
+        state: directory
+
+    - name: Directory /var/log/shy
+      ansible.builtin.file:
+        path: "{{ item }}"
+        owner: shyapps
+        group: shylogs
+        mode: '2750'
+        state: directory
+      with_items:
+        - /var/log/shy
+        - /var/log/shy/gc
+        - /var/log/shy/logback
+        - /var/log/shy/sensitive
+        - /var/log/shy/access
+        - /var/log/shy/analytics
+        - /var/log/shy/jvmlog_gc
+        
+
+    # The logs need to have limited access.
+    # This will go through the /var/log/shy directory and ensure all the sub-directories (and files within them have the appropriate permissions)
+    - name: Get list of directories in /var/log/shy
+      find:
+        paths: /var/log/shy
+        recurse: true
+        file_type: directory
+      register: log_dirs
+          
+    - name: Get list of files (recursively) in /var/log/shy
+      find:
+        paths: /var/log/shy
+        recurse: true
+        file_type: file
+      register: log_files
+          
+    - name: Ensure /var/log/shy directories have appropriate permissions
+      file:
+        path: "{{ item.path }}"
+        mode: "2750"
+      loop: "{{ log_dirs.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+
+    - name: Ensure ACL's set for each sub-dir in /var/log/shy
+      acl:
+        default: true
+        state: present
+        path: "{{ item.path }}"
+        entry: default:other::---
+      loop: "{{ log_dirs.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+      
+
+    - name: Ensure /var/log/shy files have appropriate permissions
+      file:
+        path: "{{ item.path }}"
+        mode: '0640'
+      loop: "{{ log_files.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+      diff: no
+      ignore_errors: true
+
+
+    # Newer versions of ansible will ignore this if the file doesn't exist, but that not the case here.  If it didn't exist, it will create it.
+    - name: File /var/log/haproxy.log
+      ansible.builtin.file:
+        path: /var/log/haproxy.log
+        state: touch
+        owner: root
+        group: shylogs
+        mode: '0640'
+        modification_time: preserve
+        access_time: preserve
+
+    - name: "Directory: /opt/elastic"
+      ansible.builtin.file:
+        path: /opt/elastic
+        state: directory
+        mode: 0755
+        
+    - name: "Directory: /opt/elastic/apm"
+      ansible.builtin.file:
+        path: /opt/elastic/apm
+        state: directory
+        owner: root
+        group: shyapps
+        mode: 0750
+        
+    - name: "Directory: /opt/elastic/apm/elasticapm.properties"
+      ansible.builtin.copy:
+        dest: /opt/elastic/apm/elasticapm.properties
+        mode: 0640
+        owner: root
+        group: shyapps
+        content: |
+          server_url=http://elasticapm:8200
+          application_packages=com.ausiex,com.cba
+          central_control=true
+          secret_token={{ elastic_apm_secret_token }}
+          use_path_as_transaction_name=true
+      diff: no
+          
+    - name: "File: elastic-apm-agent.jar"
+      ansible.builtin.copy:
+        src: files/base/elastic/elastic-apm-agent.jar
+        dest: /opt/elastic/apm/elastic-apm-agent.jar
+        mode: 0640
+        owner: root
+        group: shyapps
+        
+    - name: "Directory: /opt/scripts/shyapps"
+      ansible.builtin.file:
+        path: /opt/scripts/shyapps
+        state: directory
+        owner: shyapps
+        group: shyapps
+        mode: '2750'
+
+    - name: permit traffic in default zone for https and other services
+      firewalld:
+        service: "{{ item }}"
+        permanent: true
+        immediate: true
+        state: enabled
+      with_items:
+        - https
+        - other_https
+        - shy-apache_ignite_cluster_communication
+        - shy-apache_ignite_cluster_discovery
+      notify: reload firewalld
+
+#    - name: "Firewall: Java_Debugger"
+      
+    - name: "SHYNY Required Packages"
+      package:
+        name: 
+          - haproxy
+          - java-1.8.0-openjdk
+          - java-11-openjdk-headless
+          - java-17-openjdk-headless
+          - java-21-openjdk-headless
+          - libnsl
+          - python3
+          - oracle-instantclient11.2-basic
+          - oracle-instantclient12.1-basic
+          - oracle-instantclient12.2-basic
+          - redis
+        state: present
+
+
+    - name: "SHYNY Required Packages (Redhat 8 or less)"
+      when: ansible_facts['distribution'] == 'RedHat' and ansible_facts['distribution_major_version'] is version('8', '<=')
+      package:
+        name: 
+          - python3-pyOpenSSL
+        state: present
+
+    - name: "SHYNY Required Packages (Redhat 9+)"
+      when: ansible_facts['distribution'] == 'RedHat' and ansible_facts['distribution_major_version'] is version('9', '>=')
+      package:
+        name: 
+          - python3-cryptography
+        state: present
+
+    - name: "SELinux: Allow haproxy"
+      seboolean:
+        name: haproxy_connect_any
+        state: true
+        persistent: true
+
+    - name: Sudoers for linuxdevuser group
+      when: general_env == "dev"
+      copy:
+        dest: /etc/sudoers.d/linuxdevuser
+        owner: root
+        group: root
+        mode: '0400'
+        content: |
+          # This file is managed by Ansible; changes may be overwritten
+          %linuxdevuser ALL=(mapd)    NOPASSWD: /bin/bash
+          %linuxdevuser ALL=(btmapd)  NOPASSWD: /bin/bash
+          %linuxdevuser ALL=(shyapps) NOPASSWD: /bin/bash
+          %linuxdevuser ALL=(root)    NOPASSWD: /bin/systemctl reload haproxy
+          %linuxdevuser ALL=(root)    NOPASSWD: /bin/systemctl restart haproxy
+          %linuxdevuser ALL=(root)    NOPASSWD: /bin/systemctl start haproxy
+          %linuxdevuser ALL=(root)    NOPASSWD: /bin/systemctl status haproxy
+          %linuxdevuser ALL=(root)    NOPASSWD: /bin/systemctl stop haproxy
+          %linuxdevuser ALL=(root)    NOPASSWD: /bin/systemctl restart shy-*
+          %linuxdevuser ALL=(root)    NOPASSWD: /bin/systemctl start shy-*
+          %linuxdevuser ALL=(root)    NOPASSWD: /bin/systemctl status shy-*
+          %linuxdevuser ALL=(root)    NOPASSWD: /bin/systemctl stop shy-*
+          %linuxdevuser ALL=(root)    NOPASSWD: /usr/bin/cat /var/log/yum.log
+          %linuxdevuser ALL=(root)    NOPASSWD: /bin/systemctl cat
+          %linuxdevuser ALL=(root)              /bin/bash
+
+    - name: Sudoers for linuxtestuser group
+      when: general_env == "test"
+      copy:
+        dest: /etc/sudoers.d/linuxtestuser
+        owner: root
+        group: root
+        mode: '0400'
+        content: |
+          # This file is managed by Ansible; changes may be overwritten
+          %linuxtestuser ALL=(mapt)    NOPASSWD: /bin/bash
+          %linuxtestuser ALL=(btmapt)  NOPASSWD: /bin/bash
+          %linuxtestuser ALL=(shyapps) NOPASSWD: /bin/bash
+          %linuxtestuser ALL=(root)    NOPASSWD: /bin/systemctl reload haproxy
+          %linuxtestuser ALL=(root)    NOPASSWD: /bin/systemctl restart haproxy
+          %linuxtestuser ALL=(root)    NOPASSWD: /bin/systemctl start haproxy
+          %linuxtestuser ALL=(root)    NOPASSWD: /bin/systemctl status haproxy
+          %linuxtestuser ALL=(root)    NOPASSWD: /bin/systemctl stop haproxy
+          %linuxtestuser ALL=(root)    NOPASSWD: /bin/systemctl restart shy-*
+          %linuxtestuser ALL=(root)    NOPASSWD: /bin/systemctl start shy-*
+          %linuxtestuser ALL=(root)    NOPASSWD: /bin/systemctl status shy-*
+          %linuxtestuser ALL=(root)    NOPASSWD: /bin/systemctl stop shy-*
+          %linuxtestuser ALL=(root)    NOPASSWD: /usr/bin/cat /var/log/yum.log
+          %linuxtestuser ALL=(root)    NOPASSWD: /bin/systemctl cat
+          %linuxtestuser ALL=(root)              /bin/bash
+
+
+...

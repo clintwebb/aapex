@@ -1,0 +1,8 @@
+- hosts: all
+  become: yes
+
+  tasks:
+    - template:
+        src: test_jinja.j2
+        dest: /tmp/jinja.txt
+      

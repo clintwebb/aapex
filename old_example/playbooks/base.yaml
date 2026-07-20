@@ -1,0 +1,70 @@
+# The purpose of this is to call all the related playbooks to deploy security/compliance standards accross all our environments.
+# the playbooks will be seperated based on functionality, just to keep things simpler to maintain.
+# 
+# It is also very likely that automated processes will be installed which will run this playbook regularly to ensure the servers maintain 
+# stability and consitency across our entire infrastructure (similar to what puppet did previously).
+#
+# NOTE that the playbooks will be executed in the order they are listed.
+---
+
+# Verify connectivity/login before running the entire list of playbooks on multiple hosts.
+# The primary reason for this, is that if the hosts are on LDAP authentication and the user accidentally types 
+# their password incorrectly, it can end up locking their account because the login attempts are on 
+# multiple servers at the same time.
+# To avoid this, we first attempt a login on one server from the list, and only continue when it succeeds.
+- name: Verify connection
+  gather_facts: false
+  hosts: all,!dmz
+  become: false
+  tasks:
+    - name: Check if Password is Correct
+      command: echo "Password is Correct"
+      run_once: true
+      check_mode: false
+      changed_when: false
+      tags: always
+
+    - name: Check if Sudo Password is Correct
+      command: echo "Sudo Password is Correct"
+      become: true
+      run_once: true
+      check_mode: false
+      changed_when: false
+      tags: always
+
+# Primary Integral Playbooks that apply our basic infrastructure standards to pretty much all hosts.
+- import_playbook: base_system_accounts.yaml
+- import_playbook: base_storage.yaml
+- import_playbook: base_dmz_local_accounts.yaml
+- import_playbook: base_resolv.yaml
+- import_playbook: base_certificate_chains.yaml
+- import_playbook: base_satellite.yaml
+- import_playbook: base_puppet.yaml
+- import_playbook: base_repos.yaml
+- import_playbook: base_packages.yaml
+- import_playbook: base_deploy_certs.yaml
+- import_playbook: base_realmd.yaml
+- import_playbook: base_ntp.yaml
+- import_playbook: base_bash_prompt.yaml
+- import_playbook: base_general.yaml
+- import_playbook: base_firewalld_services.yaml
+- import_playbook: base_nrpe.yaml
+- import_playbook: base_ssh.yaml
+
+# Playbooks for specific host groups.
+- import_playbook: base_ansible.yaml
+- import_playbook: base_shyny.yaml
+- import_playbook: base_shy_devel.yaml
+- import_playbook: base_appproxy.yaml
+- import_playbook: base_ausftp.yaml
+- import_playbook: base_shyweb.yaml
+- import_playbook: base_shy_legacy.yaml
+- import_playbook: base_shy_comnews.yaml
+
+# Remaining playbooks for pretty much all hosts, but items that should be completed at the end.
+- import_playbook: base_elastic.yaml
+- import_playbook: base_nessus.yaml
+- import_playbook: base_xdr.yaml
+- import_playbook: base_cleanup.yaml
+
+...

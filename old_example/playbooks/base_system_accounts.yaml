@@ -1,0 +1,236 @@
+# These are applied to all servers
+---
+- name: System Accounts
+  hosts: all
+  gather_facts: no
+  become: yes
+
+  vars:
+    base_removed_users:
+      - sysaap
+      - splunk
+
+  tasks:
+
+    - name: Remove Local Groups
+      group:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - mfe
+        - nails
+        - qualys
+
+    - name: Create Local Groups
+      group:
+        name: "{{ item.name }}"
+        gid: "{{ item.gid }}"
+        state: present
+      with_items: 
+        - { name: sysadmin,   gid: 1001 }
+        - { name: brokerlogs, gid: 6310 }
+        - { name: commvault,  gid: 5687 }
+        - { name: docker,     gid: 5001 }
+        - { name: dba,        gid: 54322 }
+        - { name: httpdlogs,  gid: 1029 }
+        - { name: logmgr,     gid: 4455 }
+        - { name: mapper,     gid: 21732 }
+        - { name: nrpe,       gid: 5551 }
+        - { name: oinstall,   gid: 54320 }
+        - { name: puppetlogs, gid: 2101 }
+        - { name: sftp,       gid: 4001 }
+        - { name: shyapps,    gid: 4555 }
+        - { name: shylogs,    gid: 4556 }
+        - { name: shyxfer,    gid: 4557 }
+        - { name: splunk,     gid: 5561 }
+        - { name: systemlogs, gid: 1035 }
+        - { name: teamcity,   gid: 4101 }
+        - { name: wmaster,    gid: 1010 }
+        - { name: yumlogs,    gid: 4558 }
+
+    - name: Remove any accounts that need to be removed
+      user:
+        name: "{{ item }}"
+        remove: true
+        state: absent
+        force: true
+      with_items: "{{ base_removed_users | default([]) }}"
+
+    - name: Local Account (systask)
+      include_tasks: tasks/local_accounts.yaml
+      vars:
+        ac_name: systask
+        ac_uid: 1028
+        ac_password: '*'
+        ac_shell: /sbin/nologin
+        ac_sudoers: |
+          # This file is managed by Ansible; changes may be overwritten
+          %systask  ALL=(root) NOPASSWD: /usr/bin/yum update *, /usr/bin/systemctl reboot
+          %systask  ALL=(root) NOPASSWD: /sbin/katello-tracer-upload, /sbin/shutdown -r
+          %systask  ALL=(root) NOPASSWD: /usr/bin/zip -r - /etc/sudoers /etc/sudoers.d
+          %systask  ALL=(root) NOPASSWD: /usr/bin/insights-client
+
+    - name: Cleanup puppet stuff in crons
+      include_tasks: tasks/puppet_cron_cleanup.yaml
+      vars: 
+        cronfile: "{{ item }}" 
+      with_items:
+        - systask
+
+    - name: Crons (systask_audit)
+      cron:
+        name: systask_audit
+        user: systask
+        hour: "{{ cron_systask_audit.hour | default('7') }}"
+        minute: "{{ cron_systask_audit.minute | default('59') }}"
+        job: 'bash -c "$(curl --silent https://{{ kickstart_dns }}/systask/audit.sh)"'
+
+    - name: Crons (systask_patch)
+      cron:
+        name: systask_patch
+        user: systask
+        hour: "{{ cron_systask_patch.hour | default('4') }}"
+        minute: "{{ cron_systask_patch.minute | default('30') }}"
+        weekday: "{{ cron_systask_patch.weekday | default('*') }}"
+        job: 'bash -c "$(curl --silent https://{{ kickstart_dns }}/systask/patch.sh)"'
+
+    - name: Remove invalid files 
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/cron.d/systask                                      
+
+    - name: Local Account (ansible)
+      include_tasks: tasks/local_accounts.yaml
+      vars:
+        ac_name: ansible
+        ac_uid: 1033
+        ac_groups: 
+          - sysadmin
+        ac_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          36616666633237653835616266356162666132343931613565323931376562326566353730346166
+          6463376237356165396430363936306335626266616134340a376530303564363637313132343266
+          63303634306630333163393331383761376237303937383861356330303635623538633632363235
+          6431353462376666390a663234633565386538393964616164343165326231373332633931346139
+          62303535623739626636353434613563663836643439626336653935383935373462666337343537
+          65623632393935633366383362353366323863613033653834393031396565633131306465366264
+          30316338393363336438323037303666343131663031396630646662336639613733653738363835
+          64656138353732336461333537393163313961336639333037663336653537333030303434343531
+          30313436376330306365623466373465313032303433353334393961383033306635
+        ac_key: |
+          ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDBVKqJ4eHvuxUjL6KQCVuLsqueqIKnSaeXFliQ8wI1GtIuXumoBVGZzDbm+Fz2kWPnPMfAC8RbJpb5KF6eczbxN/9yDB/Unp+yTAMsWGxWv5KUyf7Z6N+zjauA/Fo4KsEbFFGDf/+0T9f1KSFk3kZfJL/BXUQlBBkGbfcEkskKvYo5KYEBy4Tw5o8OoPxm+Qo3dH06NNIKUl0TsqlHmyl1YaHUnKXT5oReXtRHqHY60qqtDB8qh4rn7Pv374lMKketo7lrkROY+YTO09pUZmnPOgiVrT24Q3mT7/P0EMJw/lTrFvtyeU5JFo+nDwfD8kedS31XUsb1UQ6TWiCOVWWt ansible@sysmgt1-3
+        ac_sudoers_filename: zzansible
+        ac_sudoers: |
+          # This file is managed by Ansible; changes may be overwritten
+          ansible ALL=(root) NOPASSWD: ALL
+          
+    - name: Sudoers (linuxadmin) 
+      copy:
+        dest: /etc/sudoers.d/linuxadmin
+        owner: root
+        group: root
+        mode: '0400'
+        content: |
+          # This file is managed by Ansible; changes may be overwritten
+          %linuxadmin ALL=(ALL)  ALL
+          %linuxadmin ALL=(root) NOPASSWD: /usr/bin/yum
+
+    - name: Sudoers (linuxsupport)
+      copy:
+        dest: /etc/sudoers.d/linuxsupport
+        owner: root
+        group: root
+        mode: '0400'
+        content: |
+          # This file is managed by Ansible; changes may be overwritten
+          %linuxsupport ALL=(root) /usr/bin/cat /etc/sssd/sssd.conf
+          %linuxsupport ALL=(root) /usr/bin/ls
+
+    - name: Sudoers (sysadmin) 
+      copy:
+        dest: /etc/sudoers.d/sysadmin
+        owner: root
+        group: root
+        mode: '0400'
+        content: |
+          # This file is managed by Ansible; changes may be overwritten
+          %sysadmin ALL=(ALL)  ALL
+          %sysadmin ALL=(root) NOPASSWD: /usr/bin/yum, /usr/bin/passwd [A-Za-z]*, !/usr/bin/passwd root
+
+    - name: Sudoers cleanup files not required
+      file:
+        dest: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/sudoers.d/loggin
+        - /etc/sudoers.d/ansible
+
+    - name: Sudoers (logging)
+      copy:
+        dest: /etc/sudoers.d/logging
+        owner: root
+        group: root
+        mode: '0400'
+        content: |
+          # This file is managed by Ansible; changes may be overwritten
+          #turn on sudoreplay(8)
+          Defaults log_output
+          Defaults maxseq=100
+          Defaults!/usr/bin/sudoreplay !log_output
+          Defaults!/usr/sbin/reboot !log_output
+
+
+    - name: Get login account details
+      command: whoami
+      changed_when: false
+      check_mode: false
+      become: false
+      register: whoami
+
+    - name: Set Root Password
+      when: whoami.stdout != 'root'
+      user:
+        name: root
+        password: "{{ root_passwd }}"
+
+
+############################
+# Local Accounts on SHY servers
+- name: SHY System Accounts
+  hosts: shy_legacy,shyny,shy_devels
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: Create 'shyapps' account
+      include_tasks: tasks/local_accounts.yaml
+      vars:
+        ac_name: shyapps
+        ac_group: shyapps
+        ac_uid: 4555
+        ac_key: "{{ ssh_key_shyapps_sysmgt }}"
+        ac_shell: "{{ shyapps_shell | default('/sbin/nologin') }}"
+
+  
+############################
+- name: Teamcity Agent
+  hosts: teamcity_agent
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: Create 'teamcity' account
+      include_tasks: tasks/local_accounts.yaml
+      vars:
+        ac_name: teamcity
+        ac_group: teamcity
+        ac_uid: 4101
+        ac_key: "{{ ssh_key_teamcity_agent }}"
+        ac_sudoers: |
+          # This file is managed by Ansible; changes may be overwritten
+          Cmnd_Alias PYTHON = /usr/bin/python
+          Cmnd_Alias BSHELL = /bin/sh
+          teamcity ALL=NOPASSWD: PYTHON, BSHELL
+

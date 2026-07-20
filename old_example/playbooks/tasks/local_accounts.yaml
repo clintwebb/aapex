@@ -1,0 +1,46 @@
+# General tasks for creating local service accounts
+# vars:
+#   ac_name
+#   ac_group
+#   ac_groups
+#   ac_uid
+#   ac_key
+#   ac_expires
+#   ac_password
+#   ac_shell
+#   ac_sudoers
+
+- name: "Create Local Account: {{ ac_name }}"
+  user:
+    name: "{{ ac_name }}"
+    uid: "{{ ac_uid }}"
+    group: "{{ ac_group | default(omit) }}"
+    groups: "{{ ac_groups | default(omit) }}"
+    expires: "{{ ac_expires | default('-1') }}"
+    shell: "{{ ac_shell | default(omit) }}"
+    password: "{{ ac_password | default(omit) }}"
+
+- name: "Set passwd expire: {{ ac_name }}"
+  shell:
+    cmd: "passwd -x 99999 {{ ac_name }}"
+    warn: false
+  changed_when: false
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: "Set Account AuthorizedKey: {{ ac_name }}"
+  authorized_key:
+    user: "{{ ac_name }}"
+    key: "{{ ac_key }}"
+    exclusive: "{{ ac_exclusive | default(omit) }}"
+  when: ac_key is defined
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: "Set Sudo Access: {{ ac_name }}"
+  copy:
+    dest: "/etc/sudoers.d/{{ ac_sudoers_filename | default(ac_name) }}"
+    owner: root
+    group: root
+    mode: '0400'
+    content: "{{ ac_sudoers }}"
+  when: ac_sudoers is defined
+

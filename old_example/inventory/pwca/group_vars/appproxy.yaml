@@ -1,0 +1,8 @@
+etc_hosts_extra: |
+  # DR Endpoint
+  #198.18.152.9 mlausiex.stgeorge.com.au
+  
+  # Live Endpoint
+  198.18.154.9 mlausiex.stgeorge.com.au
+
+elastic_token: "{{ elastic_tokens.linux_squid_prod }}"

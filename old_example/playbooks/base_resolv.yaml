@@ -1,0 +1,48 @@
+# Handle resolv.conf for specific environments
+- name: Resolv (DNS Lookup configuration)
+  hosts: all
+  gather_facts: no
+  become: yes
+
+  handlers:
+    - name: restart networkmanager
+      service: name=NetworkManager state=restarted
+
+  tasks:
+
+    - name: NetworkManager Configuration
+      lineinfile:
+        path: /etc/NetworkManager/NetworkManager.conf
+        regexp: "{{ item.regexp | default(omit) }}"
+        line: "{{ item.line | default(omit) }}"
+        insertafter: "{{ item.insertafter | default(omit) }}"
+        state: "{{ item.state | default(omit) }}"
+      loop_control:
+        label: "{{ item.name }}"
+      with_items:
+        - name: 'rc-manager=unmanaged'
+          regexp: '^rc-manager= '
+          line: 'rc-manager=unmanaged'
+          insertafter: '^\[main\]'
+        - name: 'dns=none'
+          regexp: '^dns= '
+          line: 'dns=none'
+          insertafter: '^\[main\]'
+      notify: restart networkmanager
+
+    - name: resolv.conf
+      copy:
+        dest: /etc/resolv.conf
+        owner: root
+        group: root
+        mode: 0644
+        content: "{{ resolv_conf }}"
+
+    - name: Hosts entries
+      template:
+        dest: /etc/hosts
+        src: files/base/hosts.j2
+        owner: root
+        group: root
+        mode: '644'
+      when: etc_hosts_override is not defined or etc_hosts_override

@@ -1,0 +1,62 @@
+# Elastic Agent to be installed on pretty-much all hosts
+---
+- name: Elastic Agent
+  hosts: all
+  become: yes
+  gather_facts: no
+
+  vars:
+    tmp_install_dir: /opt/elastic_agent_install
+
+  tasks:
+    - name: Check Elastic Agent Installed
+      stat:
+        path: /bin/elastic-agent
+      register: elastic_agent
+      
+    - name: Install Elastic Agent
+      when: "not elastic_agent.stat.exists"
+      block:
+        - name: Create Temporary Location
+          file:
+            path: "{{ tmp_install_dir }}"
+            state: directory
+            mode: 0755
+            
+        - name: Copy Agent Installer
+          unarchive:
+            src: "https://{{ kickstart_dns }}/files/linux/beats/elastic-agent/elastic-agent-{{ elastic_version }}-linux-x86_64.tar.gz"
+            dest: "{{ tmp_install_dir }}"
+            remote_src: yes
+            
+        - name: Execute Elastic Agent Installer
+          shell:
+            cmd: >
+              cd {{ tmp_install_dir }}/elastic-agent* &&
+              ./elastic-agent install 
+                --url={{ elastic_fleet_server }} 
+                --proxy-url=http://{{ elastic_proxy }} 
+                --enrollment-token={{ elastic_token }} -f                
+            creates: /bin/elastic-agent
+            
+        - name: Remove Temporary Location
+          file:
+            path: "{{ tmp_install_dir }}"
+            state: absent
+          diff: false
+
+    - name: Potentially Upgrade Elastic Agent
+      when: elastic_allow_upgrade and elastic_agent.stat.exists
+      block:
+        - name: Check Current Version
+          shell:
+            cmd: "elastic-agent version --binary-only --yaml|grep 'version:'|cut -d ':' -f 2|cut -d ' ' -f 2"
+          register: out_elastic_version
+          check_mode: false
+          changed_when: false
+          
+        - name: Update Current Version
+          when: out_elastic_version.stdout is version( elastic_version, '<', strict=true)
+          shell:
+            cmd: "elastic-agent upgrade {{ elastic_version }} -s https://{{ kickstart_dns }}/files/linux"
+

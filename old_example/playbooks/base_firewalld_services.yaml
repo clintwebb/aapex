@@ -1,0 +1,55 @@
+# The basic firewalld services config will be deployed to all hosts, but only enabled on hosts that require them
+- name: Firewalld Services
+  hosts: all
+  become: yes
+
+  handlers:
+     - name: reload firewalld
+       service: name=firewalld state=reloaded
+   
+  vars:
+    removed_services:
+      - puppet-orchestrator
+
+  tasks:
+    - name: Firewalld Services Configuration
+      copy:
+        src: "{{ item }}"
+        dest: "/etc/firewalld/services/"
+        owner: root
+        group: root
+        mode: '644'
+      with_fileglob: 
+        - "files/base/firewalld_services/*"
+        - "{{ files_env_location }}/firewalld_services/*"
+      notify: reload firewalld
+
+    - name: "Remove Firewalld Services Configurations (.xml)"
+      file:
+        name: "/etc/firewalld/services/{{ item }}.xml"
+        state: absent
+      with_items: "{{ removed_services | default([]) }}"
+      notify: reload firewalld
+
+    - name: "Remove Firewalld Services Configurations (.xml.old)"
+      file:
+        name: "/etc/firewalld/services/{{ item }}.xml.old"
+        state: absent
+      with_items: "{{ removed_services | default([]) }}"
+      notify: reload firewalld
+
+    - name: "Remove Firewalld Service"
+      firewalld:
+#        zone: public
+        service: "{{ item }}"
+        permanent: yes
+        state: disabled
+      with_items: "{{ removed_services | default([]) }}"
+      notify: reload firewalld
+
+    - name: "Masquerade disabled on all hosts"
+      firewalld:
+        masquerade: 'false'
+        state: disabled
+        permanent: yes
+      notify: reload firewalld

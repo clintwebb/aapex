@@ -1,0 +1,432 @@
+# SFTP Servers
+#
+# Since we have a large number of client accounts, this can take some time to complete when verifying them all.
+# When we have a new account being setup, we want to do it quickly and not go through all the other accounts.
+# So we can specify a specific account to handle.
+# In this example, if we are setting up a new account called 'example' we can add this to our playbook run.
+#   ansible-playbook -i inventory/uwca -k -K playbooks/base_ausftp.yaml --vars="sftp_new_account=example"
+#
+---
+- name: SFTP Servers
+  hosts: ausftp
+  gather_facts: yes
+  become: yes
+
+  handlers:
+    - import_tasks: handlers/sshd_reload.yaml
+    - name: reload rsyslog
+      service: name=rsyslog state=restarted
+
+  tasks:
+
+    - name: Local Group (sftp)
+      group:
+        name: sftp
+        gid: 4001
+        state: present
+
+    # The sftpblock group is used to disable (or not accept) connections externally.
+    # Mostly to temporariliy disable an account while performing some action.
+    - name: Local Group (sftpblock)
+      group:
+        name: sftpblock
+        gid: 4002
+        state: present
+
+    - name: "Modify General SSHD Config (MaxStartup)"
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^MaxStartups'
+        line: 'MaxStartups 20:20:200'
+        insertafter: '^#MaxStartups'
+
+    - name: Redhat-7 Configuration
+      when: ansible_facts['distribution'] == 'RedHat' and ansible_facts['distribution_major_version'] == "7"
+      block:
+        - name: "Set SSHD Config file"
+          file:
+            path: /etc/ssh/sshd_config
+            owner: root
+            group: root
+            mode: '0600'
+            content: |
+              #       $OpenBSD: sshd_config,v 1.100 2016/08/15 12:32:04 naddy Exp $
+              
+              # This is the sshd server system-wide configuration file.  See
+              # sshd_config(5) for more information.
+              
+              # This sshd was compiled with PATH=/usr/local/bin:/usr/bin
+              
+              # The strategy used for options in the default sshd_config shipped with
+              # OpenSSH is to specify options with their default value where
+              # possible, but leave them commented.  Uncommented options override the
+              # default value.
+              
+              # If you want to change the port on a SELinux system, you have to tell
+              # SELinux about this change.
+              # semanage port -a -t ssh_port_t -p tcp #PORTNUMBER
+              #
+              #Port 22
+              #AddressFamily any
+              #ListenAddress 0.0.0.0
+              #ListenAddress ::
+              
+              HostKey /etc/ssh/ssh_host_rsa_key
+              #HostKey /etc/ssh/ssh_host_dsa_key
+              HostKey /etc/ssh/ssh_host_ecdsa_key
+              HostKey /etc/ssh/ssh_host_ed25519_key
+              
+              # Ciphers and keying
+              #RekeyLimit default none
+              
+              # Logging
+              #SyslogFacility AUTH
+              #SyslogFacility AUTHPRIV
+              #LogLevel INFO
+              
+              # Authentication:
+              
+              #LoginGraceTime 2m
+              #PermitRootLogin yes
+              PermitRootLogin no
+              #StrictModes yes
+              #MaxAuthTries 6
+              MaxAuthTries 4
+              MaxSessions 20
+              
+              #PubkeyAuthentication yes
+              
+              # The default is to check both .ssh/authorized_keys and .ssh/authorized_keys2
+              # but this is overridden so installations will only check .ssh/authorized_keys
+              AuthorizedKeysFile      .ssh/authorized_keys
+              
+              #AuthorizedPrincipalsFile none
+              
+              #AuthorizedKeysCommand none
+              #AuthorizedKeysCommandUser nobody
+              
+              # For this to work you will also need host keys in /etc/ssh/ssh_known_hosts
+              #HostbasedAuthentication no
+              HostbasedAuthentication no
+              # Change to yes if you don't trust ~/.ssh/known_hosts for
+              # HostbasedAuthentication
+              #IgnoreUserKnownHosts no
+              # Don't read the user's ~/.rhosts and ~/.shosts files
+              #IgnoreRhosts yes
+              IgnoreRhosts yes
+              
+              # To disable tunneled clear text passwords, change to no here!
+              #PasswordAuthentication yes
+              #PermitEmptyPasswords no
+              PermitEmptyPasswords no
+              PasswordAuthentication yes
+              
+              # Change to no to disable s/key passwords
+              #ChallengeResponseAuthentication yes
+              ChallengeResponseAuthentication no
+              
+              # Kerberos options
+              #KerberosAuthentication no
+              #KerberosOrLocalPasswd yes
+              #KerberosTicketCleanup yes
+              #KerberosGetAFSToken no
+              #KerberosUseKuserok yes
+              
+              # GSSAPI options
+              GSSAPIAuthentication yes
+              GSSAPICleanupCredentials no
+              #GSSAPIStrictAcceptorCheck yes
+              #GSSAPIKeyExchange no
+              #GSSAPIEnablek5users no
+              
+              # Set this to 'yes' to enable PAM authentication, account processing,
+              # and session processing. If this is enabled, PAM authentication will
+              # be allowed through the ChallengeResponseAuthentication and
+              # PasswordAuthentication.  Depending on your PAM configuration,
+              # PAM authentication via ChallengeResponseAuthentication may bypass
+              # the setting of "PermitRootLogin without-password".
+              # If you just want the PAM account and session checks to run without
+              # PAM authentication, then enable this but set PasswordAuthentication
+              # and ChallengeResponseAuthentication to 'no'.
+              # WARNING: 'UsePAM no' is not supported in Red Hat Enterprise Linux and may cause several
+              # problems.
+              UsePAM yes
+              
+              #AllowAgentForwarding yes
+              #AllowTcpForwarding yes
+              #GatewayPorts no
+              X11Forwarding no
+              #X11DisplayOffset 10
+              #X11UseLocalhost yes
+              #PermitTTY yes
+              #PrintMotd yes
+              #PrintLastLog yes
+              #TCPKeepAlive yes
+              #UseLogin no
+              #UsePrivilegeSeparation sandbox
+              #PermitUserEnvironment no
+              PermitUserEnvironment no
+              #Compression delayed
+              #ClientAliveInterval 0
+              ClientAliveInterval 1m
+              #ClientAliveCountMax 3
+              ClientAliveCountMax 15
+              #ShowPatchLevel no
+              #UseDNS yes
+              #PidFile /var/run/sshd.pid
+              #MaxStartups 10:30:100
+              MaxStartups 20:20:200
+              #PermitTunnel no
+              #ChrootDirectory none
+              #VersionAddendum none
+              
+              # no default banner path
+              #Banner none
+              Banner /etc/issue.net
+              
+              # Accept locale-related environment variables
+              AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+              AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+              AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+              AcceptEnv XMODIFIERS
+              
+              # override default of no subsystems
+              #Subsystem      sftp    /usr/libexec/openssh/sftp-server
+              
+              # Example of overriding settings on a per-user basis
+              #Match User anoncvs
+              #       X11Forwarding no
+              #       AllowTcpForwarding no
+              #       PermitTTY no
+              #       ForceCommand cvs server
+              
+              ########################################
+              # CUSTOM CONFIGURATION
+              # Saxon Mailey 2018 saxon@mailey.net.au
+              ########################################
+              
+              LogLevel        INFO
+              Subsystem       sftp    internal-sftp -l DEBUG
+              Protocol 2
+              Ciphers 3des-cbc,blowfish-cbc,cast128-cbc,arcfour,arcfour128,arcfour256,aes128-cbc,aes192-cbc,aes256-cbc,rijndael-cbc@lysator.liu.se,aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com
+              KexAlgorithms diffie-hellman-group1-sha1,diffie-hellman-group14-sha1,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group-exchange-sha1,diffie-hellman-group-exchange-sha256,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,curve25519-sha256,curve25519-sha256@libssh.org,gss-gex-sha1-,gss-group1-sha1-,gss-group14-sha1-
+              MACs hmac-sha1,hmac-sha1-96,hmac-sha2-256,hmac-sha2-512,hmac-md5,hmac-md5-96,hmac-ripemd160,hmac-ripemd160@openssh.com,umac-64@openssh.com,umac-128@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha1-96-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-md5-etm@openssh.com,hmac-md5-96-etm@openssh.com,hmac-ripemd160-etm@openssh.com,umac-64-etm@openssh.com,umac-128-etm@openssh.com
+              Match Group sftp Address *,!172.24.*,!172.25.*,!172.26.*
+                      ChrootDirectory /data/sftp/%u
+                      ForceCommand internal-sftp -l DEBUG
+                      AllowTcpForwarding no
+              Match Group sftpblock
+                      ForceCommand /bin/false
+          notify: reload sshd
+               
+      # end block
+
+    - name: Redhat-9 Configuration
+      when: ansible_facts['distribution'] == 'RedHat' and ansible_facts['distribution_major_version'] == "9"
+      block:
+        - name: "Modify General SSHD Config (Subsystem sftp)"
+          replace:
+            path: /etc/ssh/sshd_config
+            regexp: '^Subsystem\s+sftp'
+            replace: '#Subsystem       sftp'
+    
+        - name: Set SFTP SSHD Config
+          copy:
+            dest: /etc/ssh/sshd_config.d/sftp.conf
+            owner: root
+            group: root
+            mode: '600'
+            content: |
+              # Client SFTP Configuration.
+              # Managed by Ansible-Operations.
+              # TODO: We should evaluate the Ciphers/MACs (verify non-impact to clients) as many of these not suitable in recent systems.
+              
+              LogLevel        INFO
+              Subsystem       sftp    internal-sftp -l DEBUG
+              Protocol 2
+              # Ciphers 3des-cbc,blowfish-cbc,cast128-cbc,arcfour,arcfour128,arcfour256,aes128-cbc,aes192-cbc,aes256-cbc,rijndael-cbc@lysator.liu.se,aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com
+              # KexAlgorithms diffie-hellman-group1-sha1,diffie-hellman-group14-sha1,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group-exchange-sha1,diffie-hellman-group-exchange-sha256,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,curve25519-sha256,curve25519-sha256@libssh.org,gss-gex-sha1-,gss-group1-sha1-,gss-group14-sha1-
+              # MACs hmac-sha1,hmac-sha1-96,hmac-sha2-256,hmac-sha2-512,hmac-md5,hmac-md5-96,hmac-ripemd160,hmac-ripemd160@openssh.com,umac-64@openssh.com,umac-128@openssh.com,hmac-sha1-etm@openssh.com,hmac-sha1-96-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-md5-etm@openssh.com,hmac-md5-96-etm@openssh.com,hmac-ripemd160-etm@openssh.com,umac-64-etm@openssh.com,umac-128-etm@openssh.com
+              Match Group sftp Address *,!172.24.*,!172.25.*,!172.26.*
+                      ChrootDirectory /data/sftp/%u
+                      ForceCommand internal-sftp -l DEBUG
+                      AllowTcpForwarding no
+              Match Group sftpblock
+                      ForceCommand /bin/false
+          notify: reload sshd
+      # end block
+
+    # If the sshd config has changed, need it to be activated to allow some future tasks to work.
+    - meta: flush_handlers
+    
+    - name: Directory /data/sftp
+      ansible.builtin.file:
+        path: /data/sftp
+        owner: root
+        group: root
+        mode: '755'
+        state: directory
+
+    # Fix a path problem from 'nrifintech' account
+    - name: Check 'nrifintech' coretx/outgoing
+      stat:
+        path: /data/sftp/nrifintech/home/nrifintech/coretx/outgoing
+      register: out_coretx_outgoing
+
+    - name: Fix path problem from 'nrifintech' account
+      when: >
+        (sftp_new_account is not defined or sftp_new_account == 'nrifintech') and
+        out_coretx_outgoing.stat.exists and 
+        out_coretx_outgoing.stat.isdir is defined and
+        out_coretx_outgoing.stat.isdir
+      shell:
+        chdir: "/data/sftp/nrifintech/home/nrifintech/coretx"
+        cmd: "mv outgoing/* ../outgoing && rmdir outgoing"
+
+    - name: Setup rsyslog sshd config
+      template:
+        src: files/base/ausftp/rsyslog_sshd.j2
+        dest: /etc/rsyslog.d/sshd.conf
+        owner: root
+        group: root
+        mode: '644'
+      notify: reload rsyslog
+
+    - name: Scripts Folders
+      file:
+        path: "{{ item.path }}"
+        owner: "{{ item.owner | default('root') }}"
+        group: "{{ item.group | default('sysadmin') }}"
+        mode: "{{ item.mode | default('755') }}"
+        state: directory
+      with_items:
+        - path: /scripts
+        - path: /scripts/b2bproxy
+        - path: /scripts/sftp
+
+    - name: "Scripts: /scripts/b2bproxy"
+      copy:
+        src: "{{ item }}"
+        dest: "/scripts/b2bproxy"
+        owner: root
+        group: sysadmin
+        mode: '0755'
+      with_fileglob:
+        - "files/base/ausftp/scripts/b2bproxy/*"
+        - "{{ files_env_location }}/ausftp/scripts/b2bproxy/*"
+    
+    - name: SFTP Client Setup
+      include_tasks: tasks/sftp_account.yaml
+      with_items: "{{ sftp_accounts }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: >
+        sftp_new_account is not defined or
+        sftp_new_account == item.name
+      vars:
+        ll_item: "{{ item }}"
+        default_data_dirs:
+          - path: "{{ item.name }}/dev"
+            owner: root
+            group: root
+            mode: 755
+          - path: "{{ item.name }}/home"
+            owner: root
+            group: root
+            mode: 755
+          - path: "{{ item.name }}/home/{{ item.name }}"
+          - path: "{{ item.name }}/home/{{ item.name }}/adhoc"
+          - path: "{{ item.name }}/home/{{ item.name }}/incoming"
+          - path: "{{ item.name }}/home/{{ item.name }}/outgoing"
+          - path: "{{ item.name }}/home/{{ item.name }}/archive"
+          - path: "{{ item.name }}/home/{{ item.name }}/archive/incoming"
+          - path: "{{ item.name }}/home/{{ item.name }}/archive/outgoing"
+        default_home_dirs:
+          - path: "logs"
+          - path: "adhoc"
+            state: link
+            src: "/data/sftp/{{ item.name }}/home/{{ item.name }}/adhoc"
+          - path: "incoming"
+            state: link
+            src: "/data/sftp/{{ item.name }}/home/{{ item.name }}/incoming"
+          - path: "outgoing"
+            state: link
+            src: "/data/sftp/{{ item.name }}/home/{{ item.name }}/outgoing"
+          - path: "archive"
+            state: link
+            src: "/data/sftp/{{ item.name }}/home/{{ item.name }}/archive"
+
+    - name: Apply SSH Public Keys
+      tags: gogo
+      authorized_key:
+        user: "{{ item.name }}"
+        key: "{{ item.authorized_keys }}"
+      with_items: "{{ ausftp_keys }}"
+      when: item.authorized_keys is defined and (item.absent is not defined or not item.absent)
+      loop_control:
+        label: "{{ item.name }}"
+
+#    - name: "Default Cleanup Crons: Archive"
+#      cron:
+#        name: "auto cleanup archive"
+#        user: "{{ item.user }}"
+#        minute: "03"
+#        hour: "03"
+#        job: "find ~/outgoing/epimaster/ -mtime +2 -type f -exec mv -v {} ~/archive/outgoing/epimaster/ \; >> ~/logs/cron.`date +\%Y\%m\%d`.log 2>&1"
+#      with_items: "{{ sftp_accounts }}"
+#      loop_control:
+#        label: "{{ item.name }}"
+#      when: >
+#        (item.absent is not defined or not item.absent) and
+#        (item.auto_cleanup is not defined or not item.auto_cleanup
+
+#    - name: "Default Cleanup Crons: Delete Archived"
+#      cron:
+#        name: "auto cleanup delete"
+#        user: "{{ item.user }}"
+#        minute: "04"
+#        hour: "03"
+#        job: "/usr/bin/find ~/archive/outgoing/epimaster/ -type f -mtime +7 -delete >> ~/logs/cron.`date +\%Y\%m\%d`.log 2>&1"
+#      with_items: "{{ sftp_accounts }}"
+##      loop_control:
+#        label: "{{ item.name }}"
+#      when: >
+#        (item.absent is not defined or not item.absent) and
+#        (item.auto_cleanup is not defined or not item.auto_cleanup
+
+#    - name: Default Cleanup Crons: Logs
+#      cron:
+#        name: "auto cleanup logs"
+#        user: "{{ item.user }}"
+#        minute: "05"
+#        hour: "03"
+#        job: "find ~/logs/  -type f -mtime +30 -exec rm -f {} \; >> ~/logs/cron.`date +\%Y\%m\%d`.log 2>&1"
+#      with_items: "{{ sftp_accounts }}"
+#      loop_control:
+#        label: "{{ item.name }}"
+#      when: >
+#        (item.absent is not defined or not item.absent) and
+#        (item.auto_cleanup is not defined or not item.auto_cleanup
+
+    - name: Crons
+      cron:
+        name: "{{ item.name }}"
+        user: "{{ item.user }}"
+        minute: "{{ item.minute | default(omit) }}"
+        hour: "{{ item.hour | default(omit) }}"
+        job: "{{ item.job | default(omit) }}"
+        state: "{{ item.state | default(omit) }}"
+      with_items: "{{ ausftp_crons_all | default([]) + ausftp_crons_test | default([]) + ausftp_crons_uat | default([]) + ausftp_crons_prod | default([]) }}"
+      loop_control:
+        label: "{{ item.user }}_{{ item.name }}"
+#      diff: no
+
+    # Crons will only run for accounts that exists, but good to cleanup.
+    - name: Delete crons for deleted accounts
+      file:
+        path: "/var/spool/cron/{{ item.name }}"
+        state: absent 
+      with_items: "{{ sftp_accounts }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: item.absent is defined and item.absent

@@ -1,0 +1,40 @@
+# This list of crons get applied to all AUSFTP hosts.  A seperate list will exist for different environments for crons that are unique.
+#
+# 
+# NOTE: Most crons run at periodic timeframe (ie, every 10 minutes).  
+#       It highly recommended to spread it over the 10 minute time.  
+#       Randomly choose a number between 0 and 9, and then use that.  
+#         ie, choose one of the following
+#             minute: "0,10,20,30,40,50"
+#             minute: "1,11,21,31,41,51"
+#             minute: "2,12,22,32,42,52"
+#             minute: "3,13,23,33,43,53"
+#             minute: "4,14,24,34,44,54"
+#             minute: "5,15,25,35,45,55"
+#             minute: "6,16,26,36,46,56"
+#             minute: "7,17,27,37,47,57"
+#             minute: "8,18,28,38,48,58"
+#             minute: "9,19,29,39,49,59"
+
+
+#ausftp_crons_all: 
+#  - name: example
+#    user: example3
+#    state: absent
+#    comment: "This is just an example, only for demonstration.. this comment line is not used, just for info"
+#    minute: "28"
+#    hour: "9"
+#    job: "touch /tmp/example3_cron"
+
+ausftp_crons_all:
+  - name: transfer_out
+    user: complyadvantage
+    minute: "5,15,25,35,45,55"
+    job: >
+      /scripts/b2bproxy/transfer_out_with_password.sh sftp.ap.complyadvantage.com {{ complyadvantage_login }} '{{ complyadvantage_pass }}' . outgoing >> ~/logs/cron.`date +\%Y\%m\%d`.log 2>&1
+  - name: transfer_in
+    user: complyadvantage
+    minute: "7,17,27,37,47,57"
+    job: >
+      /scripts/b2bproxy/transfer_in_with_password.sh sftp.ap.complyadvantage.com {{ complyadvantage_login }} {{ complyadvantage_pass | quote }} sftp_uploader_errors incoming >> ~/logs/cron.`date +\%Y\%m\%d`.log 2>&1
+

@@ -1,0 +1,4 @@
+# Handle reloading of sshd when config is changed
+---
+- name: reload sshd
+  service: name=sshd state=reloaded

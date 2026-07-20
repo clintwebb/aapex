@@ -1,0 +1,53 @@
+# App-proxy is used for applications to access resources outside our environment.
+---
+- name: Appproxy
+  hosts: appproxy
+  become: yes
+
+  handlers:
+    - name: reload squid
+      service: name=squid state=reloaded
+
+    - name: restart squid
+      service: name=squid state=restarted
+
+    - name: reload sshd
+      service: name=sshd state=reloaded
+
+    - name: reload firewalld
+      service: name=firewalld state=reloaded
+
+
+  tasks:
+    - name: Squid installed
+      package: name=squid state=present
+  
+    - name: Squid Config Files
+      copy:
+        src: "{{ item }}"
+        dest: "/etc/squid/"
+        owner: root
+        group: squid
+        mode: 0640
+      with_fileglob: "{{ files_env_location }}/appproxy/etc/squid/*"
+      notify: reload squid
+      
+    - name: Ensure squid enabled
+      service: name=squid enabled=yes state=started
+
+    - name: Firewall Access
+      firewalld:
+        service: squid
+        permanent: yes
+        immediate: true
+        state: enabled
+      notify: reload firewalld
+
+    # Fix some legacy config that was deprecated
+    - name: Fix sshd config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regex: '^AllowGroups '
+        state: absent
+      notify: reload sshd
+                                                  

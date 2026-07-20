@@ -1,0 +1,44 @@
+---
+- name: NTP
+  hosts: all
+  gather_facts: no
+  become: yes
+  
+  handlers:
+    - name: restart chronyd
+      service: name=chronyd state=restarted
+  
+  tasks:
+  
+    - name: Ensure chronyd package installed
+      package: name=chrony state=present
+
+    - name: Ensure chronyd service enabled and started
+      service: name=chronyd state=started enabled=yes
+
+    - name: Set to Sydney Time
+      file:
+        src: /usr/share/zoneinfo/Australia/Sydney
+        dest: /etc/localtime
+        state: link
+        force: true
+        
+    - name: Chrony config
+      copy:
+        dest: /etc/chrony.conf
+        content: |
+          server ntp1.mgt.internal.ausiex.com iburst
+          server ntp2.mgt.internal.ausiex.com iburst
+          stratumweight 0.001
+          driftfile /var/lib/chrony/drift
+          #makestep 0.1 10
+          makestep 1.0 3
+          rtcsync
+          bindcmdaddress 127.0.0.1
+          bindcmdaddress ::1
+          keyfile /etc/chrony.keys
+          logchange 1
+          logdir /var/log/chrony
+      notify: restart chronyd
+
+

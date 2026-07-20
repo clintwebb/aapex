@@ -1,0 +1,12 @@
+- name: "Remove Puppet Headers from: /var/spool/cron/{{ cronfile }}"
+  lineinfile:
+    path: "/var/spool/cron/{{ cronfile }}"
+    regexp: "^# HEADER:"
+    state: absent
+  
+- name: "Remove Puppet Cron Titles: /var/spool/cron/{{ cronfile }}"
+  lineinfile:
+    path: "/var/spool/cron/{{ cronfile }}"
+    regexp: "^# Puppet Name:"
+    state: absent
+  

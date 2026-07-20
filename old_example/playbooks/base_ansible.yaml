@@ -1,0 +1,58 @@
+# This applies to servers that are used to deploy items with ansible.
+# This will likely include the management servers, and deployment servers.
+# This is not required for servers that receive ansible tasks.  That not required.
+---
+- name: Ansible
+  hosts: ansible,!shy_devels_7
+  become: yes
+  gather_facts: yes
+
+  vars:
+    rh7_repo: "rhel-7-server-ansible-2-rpms"
+    rh8_repo: "ansible-2-for-rhel-8-x86_64-rpms"
+
+  tasks:
+    - name: For Redhat 7
+      when: ansible_facts['distribution'] == 'RedHat' and ansible_facts['distribution_major_version'] == "7"
+      block:
+
+        - name: Ensure ansible repo is subscribed.
+          shell:
+            cmd: "yum repolist | grep -q {{ rh7_repo }}"
+            warn: false
+          changed_when: false
+          ignore_errors: true
+          check_mode: false
+          register: ansible_repo_result
+    
+        - name: Install ansible repo
+          shell:
+            cmd: "subscription-manager repos --enable {{ rh7_repo }}"
+          when: ansible_repo_result.rc != 0
+    
+        - name: Ensure ansible package is installed.
+          package: name=ansible state=present
+    # end block    
+
+    - name: For Redhat 8
+      when: ansible_facts['distribution'] == 'RedHat' and ansible_facts['distribution_major_version'] == "8"
+      block:
+
+        - name: Ensure ansible repo is subscribed.
+          shell:
+            cmd: "yum repolist | grep -q {{ rh8_repo }}"
+            warn: false
+          changed_when: false
+          ignore_errors: true
+          check_mode: false
+          register: ansible_repo_result
+    
+        - name: Install ansible repo
+          shell:
+            cmd: "subscription-manager repos --enable {{ rh8_repo }}"
+          when: ansible_repo_result.rc != 0
+    
+        - name: Ensure ansible package is installed.
+          package: name=ansible state=present
+    # end block    
+...

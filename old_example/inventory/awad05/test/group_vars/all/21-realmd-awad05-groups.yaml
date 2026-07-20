@@ -1,0 +1,6 @@
+realmd_groups:
+  - "linuxadmin"
+  - "linuxsupport"
+  - "linuxuser"
+  - "linuxdba"
+  - "linuxtestuser"

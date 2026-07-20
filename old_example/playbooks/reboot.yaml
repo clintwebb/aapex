@@ -1,0 +1,17 @@
+# NOTE: that even though this playbook mentions 'all' hosts, it requires a '--limit' option when running.
+#        THIS WILL NOT RUN ON ALL HOSTS UNLESS EXPLICITLY REQUESTED
+#
+#       example:
+#         ansible-playbook -i inventory/awad05/dev -k -K --limit=hostexample1-1.dev playbooks/reboot.yaml
+
+---
+
+- name: Reboot
+  hosts: "{{ ansible_limit | default(omit) }}"
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: Reboot Server
+      reboot:
+

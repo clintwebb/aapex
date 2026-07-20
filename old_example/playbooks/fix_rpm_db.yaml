@@ -1,0 +1,16 @@
+# When a redhat server has a corrupted repository database (which is rare, but can happen), this will fix the issue.
+#
+# NOTE: that even though this playbook mentions 'all' hosts, it requires a '--limit' option when running.
+#        THIS WILL NOT RUN ON ALL HOSTS UNLESS EXPLICITLY REQUESTED
+#
+#       example:
+#         ansible-playbook -i inventory/awad05/dev -k -K --limit=hostexample1-1.dev playbooks/fix_rpm_db.yaml
+#
+# However, this functionality is included in the base_packages playbook and run overnight on all hosts.
+
+- name: RPM Database Fix
+  hosts: "{{ ansible_limit | default(omit) }}"
+  become: yes
+
+  tasks:
+    - include_tasks: tasks/rpm_db.yaml

@@ -1,0 +1,12 @@
+resolv_conf: |
+  # Managed by Ansible.
+  search uat.ausiex.com.au uwca.cba prod.mgt.ausiex.com.au
+  nameserver 172.26.185.10
+  nameserver 172.26.185.12
+
+
+realmd_groups:
+  - "linuxadmin"
+  - "linuxshysupport"
+  - "linuxdba"
+

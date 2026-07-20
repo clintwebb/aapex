@@ -1,0 +1,19 @@
+# A useful playbook to get information on target systems.
+# In this case, it shows the current size of data in a folder.
+#
+#  Example:
+#    ansible-playbook -i inventory/awad05/dev -k -K --limit=dev1  playbooks/du.yaml -e "dir=/var/log/shy"
+---
+- name: Show disk usage of a particular folder.
+  hosts: "{{ ansible_limit | default(omit) }}"
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: 
+      shell:
+        cmd: "du -sh {{ dir }}"
+      register: out
+
+    - debug: var=out.stdout
+

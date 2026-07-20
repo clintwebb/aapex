@@ -1,0 +1,10 @@
+- name: Test 3
+  gather_facts: no
+  hosts: "{{ ansible_limit | default(omit) }}"
+
+  tasks:
+    - stat:
+        path: /var/log/shy2
+      register: out
+
+    - debug: var=out

@@ -1,0 +1,11 @@
+system_env: DEV2
+
+resolv_conf: |
+  # Managed by Ansible.
+  search dev2 dev nonprod.mgt.internal.ausiex.com
+  nameserver 172.26.10.1
+  nameserver 172.26.10.2
+  nameserver 172.26.10.6
+  nameserver 172.26.10.7
+
+#elastic_token: "{{ elastic_tokens.linux_generic_dev }}"

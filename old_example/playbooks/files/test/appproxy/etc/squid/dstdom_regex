@@ -1,0 +1,181 @@
+#------------------------------------------
+# This config is managed by Ansible.
+#------------------------------------------
+# Regex Whitelist - Please ensure you comment with JIRA Number
+(^|\.)account\.jetbrains\.com$
+
+# JIRA-79129
+(^|\.)apigatewayb2b\.qa\.bnymellon\.com$
+
+# JIRA-77351
+(^|\.)registry\.npmjs\.org$
+
+# JIRA-69643 & JIRA-83497
+(^|\.)brightcove\.com$
+(^|\.)aspecthuntley\.com\.au$
+(^|\.)asx\.com\.au$
+(^|\.)asxonline\.com$
+
+# netmgt patching
+(^|\.)freebsd\.org$
+
+#JIRA-66847
+(^|\.)browserstack\.com$
+(^|\.)cfscustomsolutions\.com\.au$
+(^|\.)commsec\.com\.au$
+
+# JIRA-82353
+(^|\.)podbean\.com$
+
+# JIRA-69643
+^community\..*\.commsec-it\.cba$
+
+# JIRA-18305
+(^|\.)computershare\.com$
+(^|\.)comsec\.com\.au$
+
+# JIRA-18425
+(^|\.)custhelp\.com$
+(^|\.)datatoolscloud\.net\.au$
+(^|\.)digicert\.com$
+(^|\.)entrust\.net$
+(^|\.)e-portfolio\.com\.au$
+
+# JIRA-76384
+(^|\.)fatcacompliance\.com$
+(^|\.)github\.com$
+(^|\.)githubusercontent\.com$
+(^|\.)python\.org$
+(^|\.)pypi\.org$
+(^|\.)128.199.131.200$
+(^|\.)pythonhosted\.org$
+
+# JIRA-68262
+(^|\.)google\.com$
+(^|\.)iress\.com\.au$
+
+# JIRA-76386
+(^|\.)jenkins\.io$
+(^|\.)jenkins-ci\.org$
+(^|\.)lexisnexis\.com\.au$
+(^|\.)lithium\.com$
+(^|\.)macquarie\.com\.au$
+
+# JIRA-21885
+(^|\.)marketdatasystems\.com$
+(^|\.)microsoft\.com$
+(^|\.)morningstar\.com$
+(^|\.)morningstar\.com\.au$
+(^|\.)mozilla\.(com|org|net)$
+(^|\.)msn\.com$
+(^|\.)nai.com$
+
+# JIRA-30191
+(^|\.)omniture\.com$
+(^|\.)omniroot\.com$
+(^|\.)omtrdc\.net$
+(^|\.)oracle\.com$
+
+# JIRA-48788
+(^|\.)orientsys\.com\.au$
+
+# JIRA-73246
+(^|\.)ossindex\.net$
+(^|\.)ossindex\.sonatype\.net$
+
+# JIRA-69064
+(^|\.)research-commsec\.wsodqa\.com$
+^research\..*\.commsec-it\.cba$
+
+# JIRA-64513
+(^|\.)sns\.ap-southeast-2\.amazonaws\.com$
+(^|\.)sourceforge\.net$
+^support\..*\.commsec-it\.cba$
+
+# JIRA-69613
+(^|\.)sso-mod\.markitqa\.com$
+(^|\.)sun\.com$
+
+# JIRA-67006
+(^|\.)superfundlookup\.gov\.au$
+(^|\.)symcb\.com$
+(^|\.)symcd\.com$
+
+# JIRA-76368
+(^|\.)tenfore\.com$
+(^|\.)thawte\.com$
+
+# JIRA-18307
+(^|\.)twitter\.com$
+(^|\.)verisign\.com$
+(^|\.)vmware\.com$
+
+# JIRA-68261
+(^|\.)we-stats\.com$
+(^|\.)windows\.net$
+(^|\.)windowsupdate\.com$
+
+# JIRA-85047
+(^|\.)api\.pwnedpasswords\.com$
+(^|\.)haveibeenpwned\.com$
+
+# JIRA-74798 - REMOVE AFTER 31/07/2018
+(^|\.)yubico\.com$
+
+#JIRA-84549
+(^|\.)repo\.spring\.io$
+
+# REDHAT CONNECTIVITY
+(^|\.)redhat\.com$
+(^|\.)fedoraproject\.org$
+(^|\.)centos\.org$
+(^|\.)epel\.mirror
+^sam2-1\.awad05\.assetware\.com\.au$
+^satellite1-1\.management$
+
+# PUPPET
+(^|\.)puppetlabs\.com$
+
+# Requested by Aaron Bull, Terry Sveronis.  JIRA to follow.
+^registryinvestorservice-uat\.orientsys\.com\.au$
+
+#ossindex.net - JIRA-81270
+(^|\.)ossindex\.net$
+
+# Labgroup SSO - Luke 20210518
+(^|\.)fid\.api\.clientstaging\.syd\.labgroup\.dev$
+(^|\.)initiate\.api\.clientstaging\.syd\.labgroup\.dev$
+(^|\.)ausiex\.portal\.clientstaging\.syd\.labgroup\.dev$
+
+# Ausiex MOD - Luke 20210226
+(^|\.)research-westpac\.wsodqa\.com$
+(^|\.)ausiex-uat\.research\.coretrading\.com\.au$
+(^|\.)westpac-uat\.research\.coretrading\.com\.au$
+(^|\.)westpac-sharetrading-uat\.research\.coretrading\.com\.au$
+
+# JIRA ITSD-1595
+(^|\.)browserstack\.com$
+(^|\.)cloudfront\.net$
+
+# Required for Windows SOE Build
+(^|\.)chocolatey\.org$
+(^|\.)azureedge\.net$
+(^|\.)powershellgallery\.com$
+
+# ITSD-8602
+(^|\.)ebury\.io$
+(^|\.)qa-api\.markitdigital\.com$
+(^|\.)amazontrust\.com$
+
+# Saxobank
+(^|\.)saxobank\.com$
+(^|\.)logonvalidation\.net$
+
+(^|\.)cboe\.com$
+
+# ITSM-5832
+(^|\.)sandstoneinsights\.com\.au$
+
+# ITSM-6514
+(^|\.)api\.tst\.ausiex\.com\.au$
+

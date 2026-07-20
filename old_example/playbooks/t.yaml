@@ -1,0 +1,6 @@
+- hosts: doppy
+  become: yes
+
+  tasks:
+    - debug:
+        msg: "{{ elastic_token }}"

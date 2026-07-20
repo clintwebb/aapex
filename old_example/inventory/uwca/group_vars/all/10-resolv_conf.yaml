@@ -1,0 +1,6 @@
+resolv_conf: |
+  # Managed by Ansible.
+  search uwca.cba prod.mgt.internal.ausiex.com mgt.internal.ausiex.com management
+  nameserver 172.26.185.10
+  nameserver 172.26.185.12
+

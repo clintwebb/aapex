@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>oracle_sqlnet</short>
+  <description>Oracle SQLNet</description>
+  <port protocol="tcp" port="1521" />
+</service>

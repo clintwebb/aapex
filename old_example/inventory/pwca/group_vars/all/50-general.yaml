@@ -1,0 +1,22 @@
+# This is for general variables.... mostly for single, isolated variables.
+# anything where multiple variables are presented, should be in a file specifically for that.
+
+general_env: prod
+system_env: "{{ general_env | upper }}"
+
+kickstart_dns: "{{ kickstart_prod }}"
+
+files_env_location: "files/{{ general_env }}"
+
+cron_systask_patch:
+  hour: "4"
+  minute: "30"
+  weekday: "7"
+
+cron_systask_audit:
+  hour: "7"
+  minute: "59"
+
+ausiex_webserver_certificate: ausiex_webserver_certificate_20241214.p12
+
+#elastic_token: "{{ elastic_tokens.linux_generic_prod }}"

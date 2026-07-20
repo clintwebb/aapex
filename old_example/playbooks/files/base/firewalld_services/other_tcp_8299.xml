@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>other_tcp_8299</short>
+  <description>other_tcp_8299</description>
+  <port protocol="tcp" port="8299" />
+</service>

@@ -1,0 +1,197 @@
+- name: SHY Webservers
+  hosts: shyweb
+  become: yes
+
+  handlers:
+    - name: reload firewalld
+      service: name=firewalld state=reloaded
+    - name: reload httpd
+      service: name=httpd state=reloaded
+
+  tasks:
+    - name: Create 'wmaster' account
+      include_tasks: tasks/local_accounts.yaml
+      vars:
+        ac_name: wmaster
+        ac_group: wmaster
+        ac_uid: 1010
+        ac_key: "{{ wmaster_ssh_key }}"
+        ac_sudoers_filename: shyweb
+        ac_sudoers: |
+          # This file is managed by Ansible; changes may be overwritten
+          wmaster ALL=(root) NOPASSWD: /usr/bin/systemctl stop httpd, /usr/bin/systemctl start httpd, /usr/bin/systemctl status httpd, /usr/bin/systemctl restart httpd, /usr/bin/systemctl reload httpd
+
+    - name: SHYWEB Required Packages
+      package:
+        name:
+          - httpd
+          - mod_ssl
+          
+    - name: httpd service started and enabled
+      service:
+        name: httpd
+        enabled: yes
+        state: started
+
+    - name: permit traffic in default zone for https service
+      firewalld:
+        service: https
+        permanent: true
+        immediate: true
+        state: enabled
+      notify: reload firewalld
+        
+    - name: Set httpd_can_network_connect flag on and keep it persistent across reboots
+      seboolean:
+        name: httpd_can_network_connect
+        state: yes
+        persistent: yes                                        
+
+    - name: "Create Directories"
+      file:
+        dest: "{{ item.dest }}"
+        src: "{{ item.src | default(omit) }}"
+        owner: "{{ item.owner | default('wmaster') }}"
+        group: "{{ item.group | default('wmaster') }}"
+        mode: "{{ item.mode | default('2775') }}"
+        state: "{{ item.state  | default('directory') }}"
+      loop_control: 
+        label: "{{ item.dest }}"
+      with_items:
+        - dest: /var/log/httpd
+          owner: root
+          group: httpdlogs
+          mode: '2750'
+        - dest: /opt/www
+        - dest: /WWW
+          src: /opt/www
+          state: link
+        - dest: /opt/www/sites
+        - dest: /opt/www/sites/generic
+        - dest: /opt/www/sites/generic/docs
+        - dest: /opt/www/sites/docs
+          src: /opt/www/sites/generic/docs
+          state: link
+        - dest: /opt/www/etc
+        - dest: /opt/www/etc/ssl
+        - dest: /opt/www/etc/ssl/certs
+        - dest: /opt/www/etc/ssl/private
+        - dest: /opt/www/etc/ssl/CA
+        - dest: /opt/www/sites/generic/docs
+
+    # NOTE: When creating new servers it will deploy the file contents we have a copy of here.
+    #       However, it cannot be guaranteed that it is up-to-date, so when replacing servers in the future, 
+    #       recommend also deploying a release to ensure it is up-to-date.
+    - name: Copy 'sites' files if not already there
+      unarchive:
+        src: files/base/shyweb/sites.tar.gz
+        dest: /opt/www/
+        creates: /opt/www/sites/generic/docs/error/500.html
+        keep_newer: true
+
+    - name: "httpd config files"
+      template:
+        dest: "/etc/httpd/conf.d/{{ item }}"
+        src: "files/base/shyweb/{{ item }}.j2"
+        owner: root
+        group: wmaster
+        mode: '0664'
+      with_items:
+        - shy-logging.conf
+        - westpac.conf
+        - webiress.conf
+      notify: reload httpd
+
+    - name: "Westpac-coretrading config, only needed on UAT"
+      when: general_env == 'uat'
+      copy:
+        dest: /etc/httpd/conf.d/westpac-coretrading.conf
+        src: files/uat/shyweb/westpac-coretrading.conf
+        owner: root
+        group: wmaster
+        mode: '0664'
+      notify: reload httpd
+
+    # For Dev and Test hosts, we dont need to maintain a certificate, so just creating a localhost certificate.
+    - name: Localhost Certificates (dev/test)
+      when: general_env == 'dev' or general_env == 'test'
+      block:
+        - name: "Generate localhost private key (dev/test)"
+          community.crypto.openssl_privatekey:
+            path: /etc/pki/tls/private/localhost.key
+            size: 2048
+    
+        - name: Generate an OpenSSL Certificate Signing Request
+          community.crypto.openssl_csr:
+            path: /etc/ssl/localhost.csr
+            privatekey_path: /etc/pki/tls/private/localhost.key
+            common_name: "{{ inventory_hostname }}"
+            subject_alt_name: "{{ item.value | map('regex_replace', '^', 'DNS:') | list }}"
+          with_dict:
+            dns_server: 
+              - "{{ inventory_hostname }}"
+              - "{{ inventory_hostname }}.dev"
+              - "{{ inventory_hostname }}.dev2"
+              - "{{ inventory_hostname }}.text"
+              - "{{ inventory_hostname }}.text2"
+              - webiress.onlineinvesting.westpac.com.au
+              - e.shy.onlineinvesting.westpac.com.au
+              - shy.onlineinvesting.westpac.com.au
+              - t-shy.onlineinvesting.westpac.com.au
+              - f.shy.onlineinvesting.westpac.com.au
+              - f1.webiress.onlineinvesting.westpac.com.au
+              - p1.webiress.onlineinvesting.westpac.com.au
+    
+        - name: Ensure self-signed cert is present (dev/test)
+          community.crypto.x509_certificate:
+            path: /etc/pki/tls/certs/localhost.crt
+            privatekey_path: /etc/pki/tls/private/localhost.key
+            provider: selfsigned
+            selfsigned_not_after: "+365d"
+            mode: '0644'
+            csr_path: /etc/ssl/localhost.csr
+          notify: reload httpd
+        
+        # In Dev/Test just using the local server certificate (symbolic links pointing to it).
+        - name: Symbolic links to localhost cert (dev/test)
+          file:
+            src: "{{ item.src }}"
+            dest: "{{ item.dest }}"
+            state: link
+            force: true
+          loop_control:
+            label: "{{ item.dest }}"
+          with_items:
+            - dest: "/opt/www/etc/ssl/certs/{{ shyweb_westpac_url }}.crt"
+              src: /etc/pki/tls/certs/localhost.crt
+            - dest: "/opt/www/etc/ssl/private/{{ shyweb_westpac_url }}.key"
+              src: /etc/pki/tls/private/localhost.key
+            - dest: "/opt/www/etc/ssl/certs/{{ shyweb_webiress_url }}.crt"
+              src: /etc/pki/tls/certs/localhost.crt
+            - dest: "/opt/www/etc/ssl/private/{{ shyweb_webiress_url }}.key"
+              src: /etc/pki/tls/private/localhost.key
+          notify: reload httpd
+    # end block
+
+    # Transfer the certificates and keys
+    - name: Transfer Certificates.
+      copy:
+        src: "{{ item }}"
+        dest: /opt/www/etc/ssl/certs/
+        owner: root
+        group: wmaster
+        mode: '0640'
+      with_fileglob: "{{ files_env_location }}/certificates/shyweb/*.crt"
+      notify: reload httpd
+
+    - name: Transfer Keys.
+      copy:
+        src: "{{ item }}"
+        dest: /opt/www/etc/ssl/private/
+        owner: root
+        group: wmaster
+        mode: '0640'
+      with_fileglob: "{{ files_env_location }}/certificates/shyweb/*.key"
+      notify: reload httpd
+
+        

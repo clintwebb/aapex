@@ -1,0 +1,60 @@
+---
+resolv_conf: |
+  # Managed by Ansible.
+  # search dev nonprod.mgt.internal.ausiex.com
+  search nonprod.mgt.internal.ausiex.com mgt.internal.ausiex.com dev dev1 dev2 test test1 test2
+  nameserver 172.26.10.1
+  nameserver 172.26.10.2
+  nameserver 172.26.10.6
+  nameserver 172.26.10.7
+  
+realmd_groups:
+  - "linuxadmin"
+  - "linuxdba"
+  - "linuxdevuser"
+  - "linuxsupport"
+  - "linuxuser"
+          
+crypto_policy: LEGACY
+
+shyapps_shell: /bin/bash
+
+storage_size_root: 10g
+storage_size_var: 10g
+storage_size_home: 100g
+storage_size_opt: 10g
+
+# The SHY DEVEL's template was setup with LV's with slightly different name pattern.
+lv_name_root: root
+lv_name_opt: opt
+lv_name_var: var
+lv_name_tmp: tmp
+lv_name_home: home
+
+elastic_token: "{{ elastic_tokens.linux_generic_dev }}"
+
+
+etc_hosts_override: false
+
+#etc_hosts_override: |
+#  127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 shy-management
+#etc_hosts_extra: |
+#  172.26.5.223   shy-devel-littlgra
+#  172.26.5.209   shy-artifactory artifactory.ces.commsec-it.cba shy-repo shy-teamcity shy-teamcity.ces.commsec-it.cba
+#  172.26.5.225   shy-devel-greenwbe
+#  172.26.5.211   shy-devel-accept
+#  172.26.5.222   shy-devel-hacketna
+#  172.26.5.214   shy-devel-mapdb1
+#  172.26.5.215   shy-puppet-master
+#  172.26.5.225   shy-devel-forms
+#  172.26.5.230   shy-devel-reesjo
+#  172.26.5.239   shy-devel-jouberwe
+#  172.26.5.218   teamcity.ces.commsec-it.cba
+#  172.26.14.31   d.webservices.coretrading.com.au d.webservices.ausiex.com.au d.www.bt-trading.stockhighway.com.au d.www.bt.stockhighway.com.au
+#  172.26.14.121  e.webservices.coretrading.com.au e.webservices.ausiex.com.au e.www.bt-trading.stockhighway.com.au e.www.bt.stockhighway.com.au
+#  172.26.5.237   shy-dev-asx-trade
+#  ## 172.26.5.242        shy-devel-witcombr - IP is now assigened to d-shy8-chaudta
+#  172.26.5.223   shy-devel-littlgra
+#  172.26.5.249   shy-devel-leishmgo
+#  172.26.14.214  d1-oauth1-1.dev.ausiex.com.au vault.dev.ausiex.com.au
+

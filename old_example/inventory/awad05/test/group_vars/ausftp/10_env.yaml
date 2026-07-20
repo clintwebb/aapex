@@ -1,0 +1,6 @@
+
+# If enabled, an LV will be created for each sftp account (to reduce the ability for one client to fill up storage and block transfers 
+# for other clients)
+sftp_client_lv: true
+
+elastic_token: "{{ elastic_tokens.linux_generic_test }}"

@@ -1,0 +1,67 @@
+# SFTP accounts structure can be complicated.  Will evaluate suitable structure for easy on-going maintenance.
+# The key problem is:
+#   - There are lots of accounts.. if we seperate the structures, then we have to keep maintaining the info in different trees.
+#   - The accounts will be the same in all environments
+#   - The directory structure 'should' be the same in all environments.
+#   - The authentication keys will be _different_ in all environments.
+
+sftp_keys:
+  - name: aas
+#    authorized_keys: |
+  - name: amgsuper
+  - name: asgard
+  - name: aspect
+  - name: axa
+  - name: bankwest
+  - name: bgl
+  - name: broadridge
+  - name: calg3
+  - name: ccube
+  - name: cfscs
+  - name: coin
+  - name: commbiz
+  - name: commsec
+  - name: count
+  - name: csuper
+  - name: coretx
+  - name: dotdigital
+  - name: esuper
+  - name: equityandsuper
+  - name: firstwrap
+  - name: hartleys
+  - name: highway
+  - name: hnwplanningpty
+  - name: hub24
+  - name: ids
+  - name: ingd
+  - name: investmentlink
+  - name: iress
+  - name: labgroup
+  - name: lmssftp
+  - name: m2wealth
+  - name: macquarie
+  - name: mapreps
+  - name: mbl
+  - name: mdaoperator
+  - name: midwinter
+  - name: moneymarketsaustralia
+  - name: morgans
+  - name: mstar
+  - name: netwealth
+  - name: nrifintech
+  - name: oasis
+  - name: openmarkets
+  - name: ordminnett
+  - name: penson
+  - name: platfrmpls
+  - name: plutosoft
+  - name: powerwrap
+  - name: pershing
+  - name: praemium
+  - name: rwragg
+  - name: sentinel
+  - name: ssc
+  - name: stg
+  - name: supermate
+  - name: wibs
+  - name: wsl

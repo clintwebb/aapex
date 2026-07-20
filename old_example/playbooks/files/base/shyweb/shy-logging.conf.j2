@@ -1,0 +1,9 @@
+<IfModule log_config_module>
+    #
+    # SLA requirements from Clients often require reports to demonstrate that respones
+    # are within a certain range.  The log format specified adds a field to the end,
+    # which shows the time in miliseconds that the entire responce took.
+    #
+    LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %D \"%{X-Forwarded-For}i\"" shy-audit
+    LogFormat "\"%{X-Forwarded-For}i\" %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %D %h" shy-audit-proxy
+</IfModule>

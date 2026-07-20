@@ -1,0 +1,8 @@
+shyweb_westpac_url: e.shy.onlineinvesting.westpac.com.au
+shyweb_webiress_url: webiress.onlineinvesting.westpac.com.au
+
+wmaster_ssh_key: |
+  {{ ssh_key_shyapps_sysmgt }}
+  {{ ssh_key_release_intapp }}
+
+elastic_token: "{{ elastic_tokens.linux_shyweb_dev }}"

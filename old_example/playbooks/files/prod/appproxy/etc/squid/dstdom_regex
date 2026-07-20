@@ -1,0 +1,110 @@
+#------------------------------------------
+# This config is managed by Ansible.
+#------------------------------------------
+
+# Regex Whitelist - Please ensure you comment with JIRA Number
+(^|\.)aspecthuntley\.com\.au$
+
+(^|\.)asx\.com\.au$
+
+(^|\.)asxonline\.com$
+(^|\.)atlassian\.com$
+
+# JIRA-18305
+(^|\.)computershare\.com$
+
+# JIRA-69064
+(^|\.)commsecadviserservices\.com\.au$
+
+(^|\.)datatoolscloud\.net\.au$
+
+(^|\.)digicert\.com$
+(^|\.)entrust\.net$
+
+# JIRA-68262
+(^|\.)google\.com$
+(^|\.)iress\.com\.au$
+
+# JIRA-68208
+(^|\.)ksplice\.com$
+
+# JIRA-48788
+(^|\.)api\.linkgroup\.com$
+(^|\.)macquarie\.com\.au$
+(^|\.)microsoft\.com$
+
+# JIRA-97461
+(^|\.)sso-mod\.markitqa\.com$
+(^|\.)sso\.markitondemand\.com$
+
+(^|\.)omniroot\.com$
+(^|\.)omtrdc\.net$
+(^|\.)oracle\.com$
+
+(^|\.)sun\.com$
+(^|\.)symcb\.com$
+(^|\.)symcd\.com$
+(^|\.)symantec\.com$
+(^|\.)thawte\.com$
+(^|\.)verisign\.com$
+(^|\.)windowsupdate\.com$
+(^|\.)windows\.com$
+(^|\.)ocsp\.godaddy\.com$
+(^|\.)ocsp\.sectigo\.com$
+
+# Azure Notfication Hub
+(^|\.)nothub-prd\.servicebus\.windows\.net$
+
+# JIRA-80831
+(^|\.)ssllabs\.com$
+(^|\.)time\.is$
+
+# CAS IPS Service
+(^|\.)sourcefire\.com$
+(^|\.)cisco\.com$
+(^|\.)amazonaws\.com$
+(^|\.)threatgrid\.com$
+(^|\.)threatgrid\.eu$
+(^|\.)brightcloud\.com$
+(^|\.)brightcloud\.eu$
+(^|\.)feedburner\.com$
+
+# JIRA-101936
+(^|\.)api\.zeplin\.io$
+
+# Luke - 20210301
+(^|\.)research\.ausiex\.com\.au$
+(^|\.)research\.onlineinvesting\.westpac\.com\.au$
+(^|\.)research\.sharetrading\.westpac\.com\.au$
+
+# Labgroup
+(^|\.)fid\.labform\.com$
+(^|\.)services\.eappform\.com$
+
+# JIRA ITSD-2143
+(^|\.)cisco\.com$
+
+# JIRA ITSD-2142
+(^|\.)istargv-au-aex\.nrifintech\.com$
+
+# JIRA ITSD-6288
+(^|\.)iress\.com$
+
+# Required for Windows SOE Build
+(^|\.)chocolatey\.org$
+(^|\.)azureedge\.net$
+(^|\.)powershellgallery\.com$
+
+# ITSM-2183
+(^|\.)ebury\.io$
+(^|\.)api\.markitdigital\.com$
+(^|\.)amazontrust\.com$
+
+# Saxobank
+(^|\.)saxobank\.com$
+(^|\.)logonvalidation\.net$
+
+(^|\.)cboe\.com$
+
+# ITSM-5832
+(^|\.)sandstoneinsights\.com\.au$

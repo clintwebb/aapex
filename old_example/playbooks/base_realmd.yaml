@@ -1,0 +1,56 @@
+# The purpose of this playbook is to register a server against an ActiveDirectory.  
+# Note that this playbook explicitly is not applied to any server in the 'dmz' group.
+
+---
+- name: Realmd (Active-Directory)
+  hosts: all,!dmz
+  gather_facts: no
+  become: yes
+
+  handlers:
+    - name: restart sssd
+      service: name=sssd state=restarted
+
+  tasks:
+    - name: Ensure the required packages are installed.
+      package: 
+        name:
+          - realmd 
+          - oddjob
+          - oddjob-mkhomedir
+          - sssd 
+        state: present
+
+    - name: Check if already registered with a domain
+      shell:
+        cmd: "realm list --name-only"
+      changed_when: false
+      check_mode: false
+      register: realmd_domain_existing
+
+    - name: Unregister if domain doesn't match
+      shell:
+        cmd: "echo {{ realmd_ad_password }} | realm leave -U {{ realmd_ad_username }}"
+        removes: /etc/krb5.keytab
+      when: ansible_check_mode == false and realmd_domain_existing.stdout | length > 0 and (realmd_domain_existing.stdout|lower != realmd_domain|lower)
+    
+    - name: Host requires an SSH Key, ensure one exists.
+      shell:
+        cmd: "ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key"
+        creates: /etc/ssh/ssh_host_rsa_key
+
+    - name: Register with ( {{ realmd_domain }} )
+      shell:
+        cmd: "echo {{ realmd_ad_password }} | realm join {{ realmd_domain }} -U {{ realmd_ad_username }} --computer-ou={{ realmd_ou|quote }}"
+        creates: /etc/krb5.keytab
+
+    - name: Apply sssd.conf
+      template:
+        dest: /etc/sssd/sssd.conf
+        src: files/base/sssd.conf.j2
+        owner: root
+        group: root
+        mode: '0600'
+      notify: restart sssd
+          
+

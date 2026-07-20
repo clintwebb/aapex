@@ -1,0 +1,9 @@
+{% if etc_hosts_override is not defined %}
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+{% else -%}
+{{ etc_hosts_override }}
+{%- endif %}
+{% if etc_hosts_extra is defined %}
+
+{{ etc_hosts_extra }}
+{%- endif %}

@@ -1,0 +1,33 @@
+# NOTE: that even though this playbook mentions 'all' hosts, it requires a '--limit' option when running.
+#        THIS WILL NOT RUN ON ALL HOSTS UNLESS EXPLICITLY REQUESTED
+#
+#       example:
+#         ansible-playbook -i inventory/awad05/dev -k -K --limit=hostexample1-1.dev playbooks/patch.yaml
+
+---
+
+- name: Patch and Reboot (if needed)
+  hosts: "{{ ansible_limit | default(omit) }}"
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - include_tasks: tasks/rpm_db.yaml
+
+    - name: Clean Repo Cache
+      shell:
+        cmd: "yum clean all"
+
+    - name: upgrade all packages
+      yum: name='*' state=latest update_cache=true
+
+    - name: check to see if we need a reboot
+      command: needs-restarting -r
+      register: result
+      ignore_errors: yes
+      check_mode: false
+
+    - name: Reboot Server if Necessary
+      reboot:
+      when: result.rc == 1
+

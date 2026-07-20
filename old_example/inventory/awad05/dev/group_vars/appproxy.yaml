@@ -1,0 +1,14 @@
+resolv_conf: |
+  # Managed by Ansible.
+  search dev2 nonprod.mgt.internal.ausiex.com
+  nameserver 172.26.10.1
+  nameserver 172.26.10.2
+  nameserver 172.26.10.6
+  # NOTE: the libc resolver may not support more than 3 nameservers.
+  # The nameservers listed below may not be recognized.
+  nameserver 172.26.10.7
+
+etc_hosts_extra: |
+  172.26.222.21 github.internal.ausiex.com
+
+elastic_token: "{{ elastic_tokens.linux_squid_dev }}"

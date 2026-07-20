@@ -1,0 +1,36 @@
+# Puppet has been discontinued from our infrastructure.
+# This will cleanup puppet from remote systems.
+---
+- name: Puppet Removal and Cleanup
+  hosts: all
+  become: yes
+  gather_facts: no
+
+  handlers:
+    - name: yum metadata
+      command: 
+        cmd: yum clean metadata
+        warn: false
+
+  tasks:
+    - name: Removed puppet repo
+      file:
+        path: /etc/yum.repos.d/pc_repo.repo
+        state: absent
+      notify: yum metadata
+
+    - name: Remove puppet agent packages.
+      package: name=puppet-agent state=absent
+    
+    - name: Remove Puppet Directories and Files 
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/puppetlabs
+        - /opt/puppetlabs
+        - /var/log/puppetlabs
+        - /opt/scripts/nagios/check_puppet_agent.sh
+      diff: no
+        
+

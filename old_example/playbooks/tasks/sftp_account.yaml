@@ -1,0 +1,184 @@
+# Create default Folders for SFTP client, along with any additional items.
+# This is used from the base_ausftp.yaml playbook and is not intended to be used outside of that (but could be... but probably not practical)
+
+# To reduce impact of one client filling up disk-space, am trialing a solution to create seperate LV's for each client.
+- name: "For Account that is enabled {{ ll_item.name }}"
+  when: ll_item.absent is undefined or not ll_item.absent
+  block:
+
+    - name: "Local SFTP Account: {{ ll_item.name }}"
+      user:
+        name: "{{ ll_item.name }}"
+        comment: "{{ ll_item.comment | default('SFTP Client') }}"
+        uid: "{{ ll_item.uid }}"
+        groups:
+          - sftp
+        expires: -1
+
+    - name: "Local Account - Set Expire: {{ ll_item.name }}"
+      shell:
+        cmd: "passwd -x {{ ll_item.expire | default('99999') }} {{ ll_item.name }}"
+        warn: false
+      changed_when: false
+      ignore_errors: true
+
+    - name: "Add rsyslog config logging: {{ ll_item.name }}"
+      lineinfile:
+        path: /etc/rsyslog.d/sshd.conf
+        line: "$AddUnixListenSocket    /data/sftp/{{ ll_item.name }}/dev/log"
+        insertafter: '^# SFTP Config'
+      notify: reload rsyslog
+
+    - include_tasks: tasks/logical_volume_sftp.yaml
+      when: >
+        (sftp_client_lv is defined and sftp_client_lv) or
+        (ll_item.lv_ensure is defined and ll_item.lv_ensure)
+      vars:
+        mdv_sftp:
+          name: "{{ ll_item.name }}"
+          mnt: "/data/sftp/{{ ll_item.name }}"
+          lv: "lv_sftp_{{ ll_item.name }}"
+          vg: "{{ ll_item.vg | default('vg_sys') }}"
+          lv_size: "{{ ll_item.storage | default('128M') }}"
+          mnt_mode: "{{ ll_item.mnt_mode | default('755') }}"
+
+    - name: "Directory: /data/sftp/{{ ll_item.name }}"
+      file:
+        path: "/data/sftp/{{ ll_item.name }}"
+        state: directory
+        mode: "{{ ll_item.mnt_mode | default('755') }}"
+
+    - name: "Create Default SFTP data directories: {{ ll_item.name }}"
+      ansible.builtin.file:
+        path: "/data/sftp/{{ task_item.path }}"
+        owner: "{{ task_item.owner | default(ll_item.name) }}"
+        group: "{{ task_item.group | default(ll_item.name) }}"
+        mode: "{{ task_item.mode | default('700') }}"
+        state: "{{ task_item.state | default('directory') }}"
+      loop_control: 
+        loop_var: task_item
+        label: "{{ task_item.path }}"
+      with_items: "{{ default_data_dirs }}"
+
+    - name: "Create Default SFTP home directories: {{ ll_item.name }}"
+      ansible.builtin.file:
+        path: "/home/{{ ll_item.name }}/{{ task_item.path }}"
+        owner: "{{ task_item.owner | default(ll_item.name) }}"
+        group: "{{ task_item.group | default(ll_item.name) }}"
+        mode: "{{ task_item.mode | default('700') }}"
+        state: "{{ task_item.state | default('directory') }}"
+        follow: yes
+        src: "{{ task_item.src | default(omit) }}"
+      loop_control: 
+        loop_var: task_item
+        label: "{{ task_item.path }}"
+      with_items: "{{ default_home_dirs }}"
+      ignore_errors: "{{ ansible_check_mode }}"
+
+    - name: "Create Extra SFTP directories: {{ ll_item.name }}"
+      when: ll_item.home_folders is defined
+      ansible.builtin.file:
+        path: "/data/sftp/{{ ll_item.name }}/home/{{ ll_item.name }}/{{ task_item.path }}"
+        owner: "{{ task_item.owner | default(ll_item.name) }}"
+        group: "{{ task_item.group | default(ll_item.name) }}"
+        mode: "{{ task_item.mode | default('700') }}"
+        state: "{{ task_item.state | default('directory') }}"
+        follow: yes
+        src: "{{ task_item.src | default(omit) }}"
+      loop_control: 
+        loop_var: task_item
+        label: "{{ task_item.path }}"
+      with_items: "{{ ll_item.home_folders }}"
+    
+    - name: "Create Extra SFTP home symlinks: {{ ll_item.name }}"
+      when: >
+        ll_item.home_folders is defined and 
+        task_item.home_symlink is defined and task_item.home_symlink
+      ansible.builtin.file:
+        src: "/data/sftp/{{ ll_item.name }}/home/{{ ll_item.name }}/{{ task_item.path }}"
+        path: "/home/{{ ll_item.name }}/{{ task_item.path }}"
+        state: link
+        follow: yes
+      loop_control: 
+        loop_var: task_item
+        label: "{{ task_item.path }}"
+      with_items: "{{ ll_item.home_folders }}"
+      ignore_errors: "{{ ansible_check_mode }}"
+    
+    - name: "Create SFTP Home Files: {{ ll_item.name }}"
+      when: ll_item.home_files is defined
+      ansible.builtin.copy:
+        dest: "/home/{{ ll_item.name}}/{{ task_item.path }}"
+        src: "{{ task_item.src | default(omit) }}"
+        content: "{{ task_item.content | default(omit) }}"
+        directory_mode: '700'
+        follow: yes
+        owner: "{{ task_item.owner | default(ll_item.name) }}"
+        group: "{{ task_item.group | default(ll_item.name) }}"
+        mode: "{{ task_item.mode | default('600') }}"
+      loop_control: 
+        loop_var: task_item
+        label: "{{ task_item.path }}"
+      with_items: "{{ ll_item.home_files }}"
+    
+  
+#### Note that any changes above, should also be adjusted below to handle it the opposite way.
+
+- name: "Cleanup for Deleted (absent) accounts: {{ ll_item.name }}"
+  when: ll_item.absent is defined and ll_item.absent
+  block: 
+
+    - name: Remove any users removed
+      user:
+        name: "{{ ll_item.name }}"
+        remove: true
+        state: absent
+
+    - name: "Delete Absent Default SFTP data directories: {{ ll_item.name }}"
+      ansible.builtin.file:
+        path: "/data/sftp/{{ task_item.path }}"
+        state: absent
+      loop_control: 
+        loop_var: task_item
+        label: "{{ task_item.path }}"
+      with_items: "{{ default_data_dirs }}"
+    
+    - name: "Delete Absent Extra SFTP directories: {{ ll_item.name }}"
+#      when: ll_item.home_folders is defined
+      ansible.builtin.file:
+        path: "/data/sftp/{{ ll_item.name }}/home/{{ ll_item.name }}/{{ task_item.path }}"
+        state: absent
+        follow: yes
+      loop_control: 
+        loop_var: task_item
+        label: "{{ task_item.path }}"
+      with_items: "{{ ll_item.home_folders | default([]) }}"
+ 
+    - debug: var=sftp_client_lv
+   
+    - name: "Ensure Absent LV is Unmounted: lv_sftp_{{ ll_item.name }}"
+#      when: sftp_client_lv is defined and  sftp_client_lv 
+      mount:
+        path: "/data/sftp/{{ ll_item.name }}"
+        state: absent
+    
+    - name: "Ensure Absent LV is removed: {{ ll_item.name }}"
+ #     when: sftp_client_lv is undefined or not sftp_client_lv 
+      lvol:
+        vg: "{{ ll_item.vg | default('vg_sys') }}"
+        lv: "lv_sftp_{{ ll_item.name }}"
+        force: true
+        state: absent
+    
+    - name: "Ensure Absent Directory Removed: /data/sftp/{{ ll_item.name }}"
+      file:
+        path: "/data/sftp/{{ ll_item.name }}"
+        state: absent
+
+    - name: "Remove rsyslog config logging: {{ ll_item.name }}"
+      lineinfile:
+        path: /etc/rsyslog.d/sshd.conf
+        line: "$AddUnixListenSocket    /data/sftp/{{ ll_item.name }}/dev/log"
+        state: absent
+      notify: reload rsyslog
+

@@ -1,0 +1,11 @@
+etc_hosts_extra: |
+  # DR Site alternatives
+  #192.168.123.25 mlsharetradetest.stgeorge.com.au
+  #192.168.123.38 mlaussiexsit.stgeorge.com.au
+  #192.168.123.39 mlaussiexstage.stgeorge.com.au
+  
+  198.18.154.10 mlsharetradetest.stgeorge.com.au
+  198.18.154.10 mlaussiexsit.stgeorge.com.au
+  198.18.154.10 mlaussiexstage.stgeorge.com.au
+
+elastic_token: "{{ elastic_tokens.linux_squid_uat }}"

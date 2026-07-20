@@ -1,0 +1,317 @@
+# SFTP accounts structure can be complicated.  Will evaluate suitable structure for easy on-going maintenance.
+# The key problem is:
+#   - There are lots of accounts.. if we seperate the structures, then we have to keep maintaining the info in different trees.
+#   - The accounts will be the same in all environments
+#   - The directory structure 'should' be the same in all environments.
+#   - The authentication keys will be _different_ in all environments.
+
+# Example Structure
+# sftp_accounts:
+#  - name: example3
+#    rename: old_example3
+#    uid: 28888
+#    storage: 256M
+#    home_folders:
+#      - path: tester
+#      - path: outgoing/tester3
+#      - path: something
+#        src: outgoing/something
+#        state: link
+#    home_files:
+#      - path: /tester4.sh
+#        content: |
+#          #!/bin/bash
+#          echo "this is some content"
+#        mode: '700'
+#      - path: tester5
+#        src: files/base/tester5.txt
+#    absent: no
+#    lv_ensure: true
+#    auto_cleanup: false
+
+
+# auto_cleanup:
+#    By default, for each account, a cron will be added which moves files older than a certain 
+#    time to the archive folder.  And after an additonal time will be deleted from the archive.
+#    When this is set to false it will not do that.   
+#    This will be for unique cases where our contract indicates otherwise.  
+#    By default when we generate a file for a client, if they dont retrieve it (and delete it 
+#    automatically) within 7 days, it will be archived.
+#
+#    It should also be noted, that this just cleans up the basic directories, which are:
+#      outgoing
+#      outgoing/epimaster
+#      outgoing/epicash
+#
+#    Not all the other directories inside it wil be included.
+#    Anything more complicated will need its own crons.
+
+
+sftp_accounts:
+
+  - name: digger
+    uid: 29999
+    absent: true
+  - name: aas
+    uid: 21741
+    home_folders:
+      - path: archive/outgoing/epimaster
+      - path: outgoing/epimaster
+  - name: amgsuper
+    uid: 21743
+    home_folders:
+      - path: archive/outgoing/coretx
+      - path: outgoing/coretx
+  - name: asgard
+    uid: 20525
+  - name: aspect
+    uid: 20510
+  - name: axa
+    uid: 21629
+  - name: bankwest
+    uid: 21681
+  - name: bgl
+    uid: 21690
+  - name: broadridge
+    uid: 21723
+  - name: btwrap
+    absent: true
+  - name: calg3
+    uid: 21728
+  - name: ccube
+    uid: 21734
+  - name: cfscs
+    uid: 20524
+  - name: coin
+    uid: 21663
+  - name: commbiz
+    uid: 21657
+  - name: commsec
+    uid: 21667
+  - name: complii
+    absent: true
+  - name: complyadvantage
+    uid: 21748
+    storage: 256m
+    lv_ensure: true
+  - name: count
+    uid: 20514
+  - name: csuper
+    uid: 21627
+  - name: coretx
+    uid: 21744
+    home_folders:
+      - path: archive/outgoing/Accounts
+      - path: archive/outgoing/AdviserRelationship
+      - path: archive/outgoing/ClientLegalEntity
+      - path: archive/outgoing/Clients
+      - path: archive/outgoing/LegalEntities
+      - path: archive/outgoing/LegalEntityRelationship
+      - path: outgoing/artemis
+      - path: outgoing/sysveda
+      - path: outgoing/web2
+      - path: outgoing/web2/Accounts
+      - path: outgoing/web2/AdviserRelationship
+      - path: outgoing/web2/ClientLegalEntity
+      - path: outgoing/web2/Clients
+      - path: outgoing/web2/LegalEntities
+      - path: outgoing/web2/LegalEntityRelationship
+  - name: dotdigital
+    uid: 21739
+    home_folders:
+      - path: outgoing/1151
+      - path: outgoing/1152
+      - path: outgoing/1388
+      - path: outgoing/1390
+      - path: outgoing/1391
+      - path: outgoing/798
+      - path: outgoing/799
+      - path: outgoing/800
+      - path: outgoing/801
+      - path: outgoing/802
+      - path: outgoing/803
+      - path: outgoing/804
+      - path: outgoing/805
+      - path: outgoing/806
+      - path: outgoing/epicash
+      - path: outgoing/tmp
+  - name: esuper
+    uid: 21685
+  - name: equityandsuper
+    uid: 21704
+  - name: firstwrap
+    uid: 21696
+  - name: hartleys
+    uid: 20521
+    home_folders:
+      - path: outgoing/Equity
+      - path: outgoing/ETO
+      - path: outgoing/finposact
+      - path: outgoing/HINTransfer
+      - path: outgoing/INTL
+      - path: outgoing/INTL/INTL
+      - path: outgoing/MPRPT
+  - name: highway
+    uid: 2035
+  - name: hnwplanningpty
+    uid: 21698
+  - name: hub24
+    uid: 21742
+  - name: ids
+    uid: 21729
+  - name: ingd
+    uid: 21671
+  - name: investmentlink
+    uid: 21710
+    home_folders:
+      - path: outgoing/epicash
+  - name: iress
+    uid: 20513
+  - name: labgroup
+    uid: 21738
+    home_folders:
+      - path: outgoing/epicash
+  - name: lmssftp
+    uid: 21631
+  - name: m2wealth
+    uid: 21708
+  - name: macquarie
+    uid: 20501
+  - name: mapreps
+    uid: 20507
+  - name: mbl
+    uid: 21669
+  - name: mdaoperator
+    uid: 21730
+    home_folders:
+      - path: outgoing/epimaster
+  - name: midwinter
+    uid: 21712
+  - name: moneymarketsaustralia
+    uid: 21694
+  - name: morgans
+    uid: 21735
+    home_folders:
+      - path: outgoing/epicash
+  - name: mstar
+    uid: 20526
+  - name: netwealth
+    uid: 21702
+  - name: nrifintech
+    uid: 21737
+    home_folders:
+      - path: archive/outgoing/accountfile
+      - path: archive/outgoing/adviserfile
+      - path: archive/outgoing/clientfile
+      - path: archive/outgoing/contractnotesfile
+      - path: archive/outgoing/dealergroupfile
+      - path: archive/outgoing/epimaster
+      - path: BusinessIntelligence
+        home_symlink: true
+      - path: BusinessIntelligence/Broker_Reports
+      - path: BusinessIntelligence/Broker_Reports/6382
+      - path: BusinessIntelligence/Broker_Reports/6382/Trades
+      - path: BusinessIntelligence/Broker_Reports/6382/Trades/INTL
+      - path: CommBiz
+        home_symlink: true
+      - path: CommBiz/bpay_batch_payments
+      - path: CommBiz/outbox
+      - path: complii
+        home_symlink: true
+      - path: complii/advisorExtract
+      - path: complii/customProfileFeed
+      - path: complii/customProfileFeed/.done
+      - path: complii/tmReportExtract
+      - path: coretx
+        home_symlink: true
+      - path: coretx/CORETX_Extracts
+      - path: coretx/CORETX_Extracts/agentfeeds
+      - path: coretx/CORETX_Extracts/agentfeeds/HARTLEYS
+      - path: coretx/CORETX_Extracts/Archive
+      - path: coretx/CORETX_Extracts/Archive/incoming
+      - path: coretx/CORETX_Extracts/COB_MANUAL_BKP
+      - path: coretx/CORETX_Extracts/incoming
+      - path: coretx/CORETX_Extracts/incoming/agentfeeds
+      - path: coretx/CORETX_Extracts/incoming/agentfeeds/HARTLEYS
+      - path: coretx/CORETX_Extracts/incoming/Equity
+      - path: coretx/CORETX_Extracts/incoming/ETO
+      - path: coretx/CORETX_Extracts/incoming/INTL
+      - path: coretx/CORETX_Extracts/incoming/Trades
+      - path: coretx/CORETX_Extracts/tmp
+      - path: coretx/CORETX_Extracts/tmp/Archive
+      - path: coretx/outgoing
+        src:  '../outgoing'
+        state: link
+      - path: coretx/outgoing/accountfile
+      - path: coretx/outgoing/accountfile/.done
+      - path: coretx/outgoing/adviserfile
+      - path: coretx/outgoing/adviserfile/.done
+      - path: coretx/outgoing/ARTEMIS
+      - path: coretx/outgoing/clientfile
+      - path: coretx/outgoing/clientfile/.done
+      - path: coretx/outgoing/contractnotesfile
+      - path: coretx/outgoing/contractnotesfile/.done
+      - path: coretx/outgoing/dealergroupfile
+      - path: coretx/outgoing/dealergroupfile/.done
+      - path: coretx/outgoing/epimaster
+      - path: coretx/outgoing/epimaster/.done
+      - path: ibroker
+      - path: ibroker/outgoing
+      - path: ibroker/outgoing/trialbalance
+      - path: ibroker/outgoing/trialbalance/.done
+      - path: share
+      - path: trialb
+      - path: trialb/ibroker
+  - name: oasis
+    uid: 21673
+  - name: openmarkets
+    uid: 21718
+    home_folders:
+      - path: outgoing/epicash
+  - name: ordminnett
+    uid: 21706
+  - name: penson
+    uid: 21653
+  - name: platfrmpls
+    uid: 21661
+  - name: plutosoft
+    uid: 21740
+    home_folders:
+      - path: outgoing/epimaster
+  - name: powerwrap
+    uid: 21731
+    home_folders:
+      - path: outgoing/epicash
+      - path: outgoing/epimaster
+  - name: perpetual
+    absent: true
+  - name: pershing
+    uid: 21675
+  - name: praemium
+    uid: 21692
+    home_folders:
+      - path: outgoing/epicash
+      - path: outgoing/epicash/epimanualload
+      - path: outgoing/epimaster
+  - name: rwragg
+    uid: 20518
+  - name: saxo
+    uid: 21747
+  - name: sentinel
+    uid: 21733
+  - name: ssc
+    uid: 21633
+  - name: stg
+    uid: 21659
+  - name: supermate
+    uid: 21724
+  - name: wibs
+    uid: 21720
+  - name: wsl
+    uid: 20519
+    home_folders:
+      - path: outgoing/TO_ATV
+      - path: outgoing/GCM
+      - path: outgoing/brokertrades
+      - path: outgoing/BT
+      - path: incoming/BT
