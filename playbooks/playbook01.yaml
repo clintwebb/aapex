@@ -10,7 +10,7 @@
 
   vars:
     space_data: "Freddy"
-    wooper: !vault |
+    wooper_default: !vault |
           $ANSIBLE_VAULT;1.1;AES256
           64346162383439623335646331306538386362643064643433663536306333613661646230363366
           3966666531376664633561666461663166633536343738340a343264623036373861666131366232
@@ -50,4 +50,4 @@
         - path: /srv/http/rhokz.com_infra
         - path: "/srv/{{ grouper | default('unknown') }}"
         - path: "/srv/{{ grouper | default('unknown') }}/wooter"
-        - path: "/srv/{{ grouper | default('unknown') }}/{{ wooper }}"
+        - path: "/srv/{{ grouper | default('unknown') }}/{{ wooper | default(wooper_default) }}"
